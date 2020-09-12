@@ -286,6 +286,9 @@ static int gpu_dvfs_update_config_data_from_dt(struct kbase_device *kbdev)
 	gpu_update_config_data_int(np, "gpu_max_clock", &platform->gpu_max_clock);
 	gpu_update_config_data_int(np, "gpu_max_clock_limit", &platform->gpu_max_clock_limit);
 	gpu_update_config_data_int(np, "gpu_min_clock", &platform->gpu_min_clock);
+#ifdef CONFIG_MALI_ASV_CALIBRATION_SUPPORT
+	gpu_update_config_data_int(np, "gpu_asv_cali_lock_val", &platform->gpu_asv_cali_lock_val);
+#endif
 	gpu_update_config_data_int(np, "gpu_dvfs_bl_config_clock", &platform->gpu_dvfs_config_clock);
 	gpu_update_config_data_int(np, "gpu_default_voltage", &platform->gpu_default_vol);
 	gpu_update_config_data_int(np, "gpu_cold_minimum_vol", &platform->cold_min_vol);
@@ -468,10 +471,6 @@ static int gpu_context_init(struct kbase_device *kbdev)
 #ifdef CONFIG_MALI_EXYNOS_TRACE
 	if (gpu_trace_init(kbdev) != 0)
 		return -1;
-#endif
-
-#ifdef CONFIG_MALI_ASV_CALIBRATION_SUPPORT
-	platform->gpu_auto_cali_status = false;
 #endif
 
 	platform->inter_frame_pm_status = platform->inter_frame_pm_feature;
