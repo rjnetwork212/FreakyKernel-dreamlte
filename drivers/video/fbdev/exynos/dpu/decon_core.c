@@ -50,6 +50,8 @@
 extern void set_suspend_cpufreq(bool);
 #endif
 
+bool is_suspend = false;
+
 int decon_log_level = 4;
 
 module_param(decon_log_level, int, 0644);
@@ -968,13 +970,11 @@ blank_exit:
 		is_suspend = false;
 #ifdef CONFIG_CPU_FREQ_SUSPEND
 		set_suspend_freqs(false);
-		set_suspend_cpufreq(false);
 #endif
 	} else {
 		is_suspend = true;
 #ifdef CONFIG_CPU_FREQ_SUSPEND
 		set_suspend_freqs(true);
-		set_suspend_cpufreq(true);
 #endif
 	}
 
