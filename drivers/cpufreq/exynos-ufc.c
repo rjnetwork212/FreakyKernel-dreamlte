@@ -22,6 +22,8 @@
 
 #include "exynos-acme.h"
 
+#include <linux/moduleparam.h>
+
 /*********************************************************************
  *                          SYSFS INTERFACES                         *
  *********************************************************************/
@@ -32,7 +34,7 @@
 #define SCALE_SIZE	2
 
 static int last_max_limit = -1;
-static int sse_mode;
+static int sse_mode = 0;
 
 static ssize_t show_cpufreq_table(struct kobject *kobj,
 				struct attribute *attr, char *buf)
@@ -116,6 +118,8 @@ static ssize_t store_cpufreq_min_limit(struct kobject *kobj,
 				struct attribute *attr, const char *buf,
 				size_t count)
 {
+#if 0
+
 	struct list_head *domains = get_domain_list();
 	struct exynos_cpufreq_domain *domain;
 	int input, scale = -1;
@@ -220,7 +224,7 @@ static ssize_t store_cpufreq_min_limit(struct kobject *kobj,
 
 		set_max = true;
 	}
-
+#endif // if 0
 	return count;
 }
 
@@ -228,6 +232,8 @@ static ssize_t store_cpufreq_min_limit_wo_boost(struct kobject *kobj,
 				struct attribute *attr, const char *buf,
 				size_t count)
 {
+#if 0
+
 	struct list_head *domains = get_domain_list();
 	struct exynos_cpufreq_domain *domain;
 	int input, scale = -1;
@@ -329,7 +335,7 @@ static ssize_t store_cpufreq_min_limit_wo_boost(struct kobject *kobj,
 
 		set_max = true;
 	}
-
+#endif // if 0
 	return count;
 
 }
@@ -499,6 +505,7 @@ static void cpufreq_max_limit_update(int input_freq)
 static ssize_t store_cpufreq_max_limit(struct kobject *kobj, struct attribute *attr,
 					const char *buf, size_t count)
 {
+/*
 	int input;
 
 	if (sscanf(buf, "%8d", &input) < 1)
@@ -506,7 +513,7 @@ static ssize_t store_cpufreq_max_limit(struct kobject *kobj, struct attribute *a
 
 	last_max_limit = input;
 	cpufreq_max_limit_update(input);
-
+*/
 	return count;
 }
 

@@ -534,6 +534,7 @@ static ssize_t show_max_lock_dvfs(struct device *dev, struct device_attribute *a
 
 static ssize_t set_max_lock_dvfs(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
+/*
 	int ret, clock = 0;
 	struct exynos_context *platform = (struct exynos_context *)pkbdev->platform_context;
 
@@ -555,7 +556,11 @@ static ssize_t set_max_lock_dvfs(struct device *dev, struct device_attribute *at
 		clock = gpu_dvfs_get_level_clock(clock);
 
 		ret = gpu_dvfs_get_level(clock);
+<<<<<<< HEAD
 		if ((ret < gpu_dvfs_get_level(platform->gpu_max_clock)) || (ret > gpu_dvfs_get_level(platform->gpu_min_clock))) {
+=======
+		if ((ret < gpu_dvfs_get_level(platform->gpu_max_clock_limit)) || (ret > gpu_dvfs_get_level(platform->gpu_min_clock))) {
+>>>>>>> 40287b1ad2a1 (Disable stock DVFS and optimize ...)
 			GPU_LOG(DVFS_WARNING, DUMMY, 0u, 0u, "%s: invalid clock value (%d)\n", __func__, clock);
 			return -ENOENT;
 		}
@@ -565,7 +570,7 @@ static ssize_t set_max_lock_dvfs(struct device *dev, struct device_attribute *at
 		else
 			gpu_dvfs_clock_lock(GPU_DVFS_MAX_LOCK, SYSFS_LOCK, clock);
 	}
-
+*/
 	return count;
 }
 
@@ -603,6 +608,7 @@ static ssize_t show_min_lock_dvfs(struct device *dev, struct device_attribute *a
 
 static ssize_t set_min_lock_dvfs(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
+/*
 	int ret, clock = 0;
 	struct exynos_context *platform = (struct exynos_context *)pkbdev->platform_context;
 
@@ -637,7 +643,7 @@ static ssize_t set_min_lock_dvfs(struct device *dev, struct device_attribute *at
 		else
 			gpu_dvfs_clock_lock(GPU_DVFS_MIN_LOCK, SYSFS_LOCK, clock);
 	}
-
+*/
 	return count;
 }
 
