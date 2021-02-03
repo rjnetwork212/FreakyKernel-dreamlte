@@ -38,6 +38,32 @@
 
 extern struct kbase_device *pkbdev;
 
+/* custom DVFS */
+static unsigned int gpu_dvfs_max_temp = 65;			/* min 45, max 85 °C */
+
+#define GPU_DVFS_MARGIN_TEMP	10				/* °C */
+#define GPU_DVFS_CHECK_DELAY		100		/* ms */
+
+#define FREQ_STEP_0	260000
+#define FREQ_STEP_1	338000
+#define FREQ_STEP_2	385000
+#define FREQ_STEP_3	455000
+#define FREQ_STEP_4	546000
+#define FREQ_STEP_5	572000
+#define FREQ_STEP_6	683000
+#define FREQ_STEP_7	764000
+#define FREQ_STEP_8	839000
+
+/* for ondemand gov */
+unsigned int gpu_up_threshold = 75;
+bool gpu_boost = true;
+unsigned int gpu_down_threshold = 0;
+#define DOWN_THRESHOLD_MARGIN			(25)
+#define GPU_MIN_UP_THRESHOLD		(40)
+#define GPU_MAX_UP_THRESHOLD		(100)
+#define GPU_FREQ_STEP_0			(260)
+#define GPU_FREQ_STEP_1			(338)
+
 int gpu_pmqos_dvfs_min_lock(int level)
 {
 #ifdef CONFIG_MALI_DVFS
@@ -1490,6 +1516,7 @@ static ssize_t show_kernel_sysfs_max_lock_dvfs(struct kobject *kobj, struct kobj
 
 static ssize_t set_kernel_sysfs_max_lock_dvfs(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
+/*
 	int ret, clock = 0;
 	struct exynos_context *platform = (struct exynos_context *)pkbdev->platform_context;
 
@@ -1521,7 +1548,7 @@ static ssize_t set_kernel_sysfs_max_lock_dvfs(struct kobject *kobj, struct kobj_
 		else
 			gpu_dvfs_clock_lock(GPU_DVFS_MAX_LOCK, SYSFS_LOCK, clock);
 	}
-
+*/
 	return count;
 }
 
@@ -1583,6 +1610,7 @@ static ssize_t show_kernel_sysfs_min_lock_dvfs(struct kobject *kobj, struct kobj
 
 static ssize_t set_kernel_sysfs_min_lock_dvfs(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
 {
+/*
 	int ret, clock = 0;
 	struct exynos_context *platform = (struct exynos_context *)pkbdev->platform_context;
 
@@ -1617,7 +1645,7 @@ static ssize_t set_kernel_sysfs_min_lock_dvfs(struct kobject *kobj, struct kobj_
 		else
 			gpu_dvfs_clock_lock(GPU_DVFS_MIN_LOCK, SYSFS_LOCK, clock);
 	}
-
+*/
 	return count;
 }
 
@@ -1641,8 +1669,8 @@ static ssize_t set_kernel_sysfs_user_max_clock(struct kobject *kobj, struct kobj
 
 		if (clock == 260000 || clock == 338000 || clock == 385000 || clock == 455000 || clock == 546000
 				|| clock == 572000 || clock == 683000 || clock == 764000 || clock == 839000) {
-
 			platform->gpu_max_clock = clock;
+			platform->user_max_lock_input = clock;
 		} else {
 			pr_warning("[GPU:] Invaild input\n");
 			return -EINVAL;
@@ -1911,7 +1939,7 @@ static ssize_t show_kernel_sysfs_gpu_temp(struct kobject *kobj, struct kobj_attr
 
 	mutex_unlock(&gpu_thermal_data->lock);
 
-	gpu_temp_int = gpu_temp / 1000;
+	gpu_temp_int = gpu_temp / MCELSIUS;
 	gpu_temp_point = gpu_temp % gpu_temp_int;
 	ret += snprintf(buf+ret, PAGE_SIZE-ret, "%d.%d", gpu_temp_int, gpu_temp_point);
 
@@ -1924,6 +1952,113 @@ static ssize_t show_kernel_sysfs_gpu_temp(struct kobject *kobj, struct kobj_attr
 	}
 
 	return ret;
+}
+
+static ssize_t show_kernel_sysfs_gpu_dvfs_max_temp(struct kobject *kobj, struct kobj_attribute *attr, char *buf)
+{
+	sprintf(buf, "%s[max_temp]\t%u °C\n",buf, gpu_dvfs_max_temp);
+	return strlen(buf);
+}
+
+static ssize_t set_kernel_sysfs_gpu_dvfs_max_temp(struct kobject *kobj, struct kobj_attribute *attr, const char *buf, size_t count)
+{
+	unsigned int tmp;
+
+	if (sscanf(buf, "%u", &tmp)) {
+
+		if (tmp < 45 || tmp > 85) {
+			pr_err("%s: out of range 45 - 85\n", __func__);
+			return -EINVAL;
+		}
+
+		gpu_dvfs_max_temp = tmp;
+		return count;
+	}
+
+	pr_err("%s: invalid input\n", __func__);
+	return -EINVAL;
+}
+
+static void gpu_dvfs_check_thread(struct work_struct *work);
+DECLARE_DELAYED_WORK(gpu_dvfs_check_work, gpu_dvfs_check_thread);
+
+static void gpu_dvfs_check_thread(struct work_struct *work)
+{
+	int gpu_temp, clock = 0;
+	struct exynos_context *platform = (struct exynos_context *)pkbdev->platform_context;
+
+	if (gpu_thermal_data == NULL) {
+		pr_err("%s: gpu_thermal_data not ready !\n", __func__);
+		goto out;
+	}
+
+	if (platform == NULL) {
+		pr_err("%s: platform not ready !\n", __func__);
+		goto out;
+	}
+
+	gpu_temp = gpu_thermal_data->tmu_read(gpu_thermal_data);
+
+	if (gpu_temp >= gpu_dvfs_max_temp) {
+
+		if (platform->user_max_lock_input == FREQ_STEP_0)
+			goto out;
+
+		if (platform->user_max_lock_input == FREQ_STEP_8)
+			clock = FREQ_STEP_7;
+		else if (platform->user_max_lock_input == FREQ_STEP_7)
+			clock = FREQ_STEP_6;
+		else if (platform->user_max_lock_input == FREQ_STEP_6)
+			clock = FREQ_STEP_5;
+		else if (platform->user_max_lock_input == FREQ_STEP_5)
+			clock = FREQ_STEP_4;
+		else if (platform->user_max_lock_input == FREQ_STEP_4)
+			clock = FREQ_STEP_3;
+		else if (platform->user_max_lock_input == FREQ_STEP_3)
+			clock = FREQ_STEP_2;
+		else if (platform->user_max_lock_input == FREQ_STEP_2)
+			clock = FREQ_STEP_1;
+		else if (platform->user_max_lock_input == FREQ_STEP_1)
+			clock = FREQ_STEP_0;
+		else
+			goto out;
+
+		platform->user_max_lock_input = clock;
+		gpu_dvfs_clock_lock(GPU_DVFS_MAX_LOCK, SYSFS_LOCK, clock);
+		goto out;
+	}
+
+	if (platform->user_max_lock_input == platform->gpu_max_clock)
+		goto out;
+
+	if (gpu_temp <= (gpu_dvfs_max_temp - GPU_DVFS_MARGIN_TEMP)) {
+
+		if (platform->user_max_lock_input == FREQ_STEP_0)
+			clock = FREQ_STEP_1;
+		else if (platform->user_max_lock_input == FREQ_STEP_1)
+			clock = FREQ_STEP_2;
+		else if (platform->user_max_lock_input == FREQ_STEP_2)
+			clock = FREQ_STEP_3;
+		else if (platform->user_max_lock_input == FREQ_STEP_3)
+			clock = FREQ_STEP_4;
+		else if (platform->user_max_lock_input == FREQ_STEP_4)
+			clock = FREQ_STEP_5;
+		else if (platform->user_max_lock_input == FREQ_STEP_5)
+			clock = FREQ_STEP_6;
+		else if (platform->user_max_lock_input == FREQ_STEP_6)
+			clock = FREQ_STEP_7;
+		else if (platform->user_max_lock_input == FREQ_STEP_7)
+			clock = FREQ_STEP_8;
+		else
+			goto out;
+
+		platform->user_max_lock_input = clock;
+		gpu_dvfs_clock_lock(GPU_DVFS_MAX_LOCK, SYSFS_LOCK, clock);
+	}
+
+out:
+	schedule_delayed_work(&gpu_dvfs_check_work, 
+			msecs_to_jiffies(GPU_DVFS_CHECK_DELAY));
 }
 
 static struct kobj_attribute gpu_temp_attribute =
@@ -1945,6 +2080,15 @@ static struct kobj_attribute user_max_clock_attribute =
 
 static struct kobj_attribute user_min_clock_attribute =
 	__ATTR(user_min_clock, S_IRUGO|S_IWUSR, show_kernel_sysfs_user_min_clock, set_kernel_sysfs_user_min_clock);
+
+static struct kobj_attribute gpu_dvfs_max_temp_attribute =
+	__ATTR(gpu_dvfs_max_temp, S_IRUGO|S_IWUSR, show_kernel_sysfs_gpu_dvfs_max_temp, set_kernel_sysfs_gpu_dvfs_max_temp);
+
+static struct kobj_attribute boost_attribute =
+	__ATTR(boost, S_IRUGO|S_IWUSR, show_kernel_sysfs_boost, set_kernel_sysfs_boost);
+
+static struct kobj_attribute up_threshold_attribute =
+	__ATTR(up_threshold, S_IRUGO|S_IWUSR, show_kernel_sysfs_up_threshold, set_kernel_sysfs_up_threshold);
 #endif /* #ifdef CONFIG_MALI_DVFS */
 
 static struct kobj_attribute gpu_busy_attribute =
@@ -1978,6 +2122,9 @@ static struct attribute *attrs[] = {
 	&gpu_min_lock_attribute.attr,
 	&user_max_clock_attribute.attr,
 	&user_min_clock_attribute.attr,
+	&gpu_dvfs_max_temp_attribute.attr,
+	&boost_attribute.attr,
+	&up_threshold_attribute.attr,
 #endif /* #ifdef CONFIG_MALI_DVFS */
 	&gpu_busy_attribute.attr,
 	&gpu_clock_attribute.attr,
@@ -2237,3 +2384,11 @@ void gpu_remove_sysfs_file(struct device *dev)
 	kobject_put(external_kobj);
 #endif
 }
+
+static int __init gpu_dvfs_init(void)
+{
+	schedule_delayed_work(&gpu_dvfs_check_work, 0);
+	pr_err("%s: started gpu_dvfs_check_work\n", __func__);
+	return 0;
+}
+late_initcall(gpu_dvfs_init);
