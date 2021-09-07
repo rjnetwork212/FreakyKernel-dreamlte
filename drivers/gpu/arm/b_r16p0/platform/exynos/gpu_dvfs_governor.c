@@ -239,8 +239,10 @@ static int gpu_dvfs_governor_booster(struct exynos_context *platform, int utiliz
 
 static int gpu_dvfs_governor_dynamic(struct exynos_context *platform, int utilization)
 {
-	int max_clock_lev = gpu_dvfs_get_level(platform->gpu_max_clock);
-	int min_clock_lev = gpu_dvfs_get_level(platform->gpu_min_clock);
+	int max_clock_lev, min_clock_lev;
+	DVFS_ASSERT(platform);
+	max_clock_lev = gpu_dvfs_get_level(platform->gpu_max_clock);
+	min_clock_lev = gpu_dvfs_get_level(platform->gpu_min_clock);
 
 	DVFS_ASSERT(platform);
 
