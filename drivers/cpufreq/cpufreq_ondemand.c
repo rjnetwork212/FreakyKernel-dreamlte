@@ -18,6 +18,8 @@
 #include <linux/tick.h>
 #include "cpufreq_governor.h"
 
+extern unsigned int cpu4_dvfs_limit;
+
 /* On-demand governor macros */
 #define DEF_FREQUENCY_UP_THRESHOLD		(80)
 #define DEF_SAMPLING_DOWN_FACTOR		(1)
@@ -165,6 +167,7 @@ static void od_check_cpu(int cpu, unsigned int load)
 	if (load > od_tuners->up_threshold) {
 		/* If switching to max speed, apply sampling_down_factor */
 		if (policy->cur < policy->max)
+
 			dbs_info->rate_mult =
 				od_tuners->sampling_down_factor;
 		dbs_freq_increase(policy, policy->max);

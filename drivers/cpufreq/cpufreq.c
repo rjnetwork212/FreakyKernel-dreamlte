@@ -51,7 +51,7 @@ bool enable_suspend_freqs = false;
 module_param(enable_suspend_freqs, bool, 0644);
 #endif
 
-extern void set_cpu_dvfs_limit(unsigned int freq);
+extern void sanitize_cpu_dvfs(bool sanitize);
 
 static LIST_HEAD(cpufreq_policy_list);
 
