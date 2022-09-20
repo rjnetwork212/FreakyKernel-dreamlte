@@ -2013,7 +2013,7 @@
 
 				default_int_cam = <DVFS_INT_CAM_L0>;
 				default_cam = <DVFS_CAM_L0>;
-				default_mif = <DVFS_MIF_L0>;
+				default_mif = <DVFS_MIF_L2>;
 				default_int = <DVFS_INT_L0>;
 				default_i2c = <0>;
 				default_hpg = <1>;
@@ -2395,7 +2395,7 @@
 
 				default_int_cam = <DVFS_INT_CAM_L0>;
 				default_cam = <DVFS_CAM_L0>;
-				default_mif = <DVFS_MIF_L0>;
+				default_mif = <DVFS_MIF_L2>;
 				default_int = <DVFS_INT_L0>;
 				default_i2c = <0>;
 

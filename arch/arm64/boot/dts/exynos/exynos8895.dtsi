@@ -833,7 +833,7 @@
 		gpu_runtime_pm_delay_time = <0>;
 		gpu_dvfs_polling_time = <30>;
 		gpu_pmqos_int_disable = <1>;
-		gpu_pmqos_mif_max_clock = <2093000>;
+		gpu_pmqos_mif_max_clock = <1794000>;
 		gpu_pmqos_mif_max_clock_base = <385000>;
 		gpu_cl_dvfs_start_base = <260000>;
 		gpu_debug_level = <4>; /*DEBUG(1) INFO(2) WARNING(3) ERROR(4)*/
@@ -2500,11 +2500,11 @@
 		use_delay_time = "true";
 		delay_time_list = "20";
 
-		freq_info = <2093000 208000 1014000 208000 2093000 421000>;
+		freq_info = <1794000 208000 1014000 1014000 2093000 1794000>;
 		/* initial_freq, default_qos, suspend_freq, min_freq, max_freq reboot_freq */
 
 		/* Booting value */
-		boot_info = <40 2093000>;
+		boot_info = <40 1794000>;
 		/* boot_qos_timeout, boot_freq */
 
 		use_get_dev = "false";
@@ -3827,7 +3827,7 @@
 				thrd_mb = <1884284>;
 				freq_mfc = <667000>;
 				freq_int = <533000>;
-				freq_mif = <2093000>;
+				freq_mif = <1794000>;
 				freq_cpu = <0>;
 				freq_kfc = <0>;
 				mo_value = <0>;
@@ -3838,7 +3838,7 @@
 				thrd_mb = <2713968>;
 				freq_mfc = <400000>;
 				freq_int = <533000>;
-				freq_mif = <845000>;
+				freq_mif = <1794000>;
 				freq_cpu = <0>;
 				freq_kfc = <0>;
 				mo_value = <1>;
@@ -3849,7 +3849,7 @@
 				thrd_mb = <3267739>;
 				freq_mfc = <533000>;
 				freq_int = <533000>;
-				freq_mif = <2093000>;
+				freq_mif = <1794000>;
 				freq_cpu = <0>;
 				freq_kfc = <0>;
 				mo_value = <1>;
@@ -3860,7 +3860,7 @@
 				thrd_mb = <4517358>;
 				freq_mfc = <667000>;
 				freq_int = <533000>;
-				freq_mif = <2093000>;
+				freq_mif = <1794000>;
 				freq_cpu = <0>;
 				freq_kfc = <0>;
 				mo_value = <0>;
