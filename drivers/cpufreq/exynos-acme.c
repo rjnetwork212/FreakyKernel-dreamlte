@@ -25,6 +25,8 @@
 
 #include "exynos-acme.h"
 
+extern bool is_suspend;
+
 /*
  * list head of cpufreq domain
  */
@@ -468,7 +470,7 @@ static unsigned int cpu4_max_freq = 0;
 module_param(cpu4_min_freq, uint, 0644);
 module_param(cpu4_max_freq, uint, 0644);
 
-void set_suspend_cpufreq(bool is_suspend)
+void set_suspend_cpufreq(void)
 {
 	static bool update_freqs = false;
 
