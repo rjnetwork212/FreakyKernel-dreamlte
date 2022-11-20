@@ -25,7 +25,9 @@
 
 #include "exynos-acme.h"
 
-extern bool is_suspend;
+#ifdef CONFIG_HOTPLUG_CPU
+extern void should_hotplug_big_cpu(void);
+#endif
 
 /*
  * list head of cpufreq domain
@@ -470,9 +472,11 @@ static unsigned int cpu4_max_freq = 0;
 module_param(cpu4_min_freq, uint, 0644);
 module_param(cpu4_max_freq, uint, 0644);
 
-void set_suspend_cpufreq(void)
+void set_suspend_cpufreq(bool is_suspend)
 {
-	static bool update_freqs = false;
+	static bool update_cpu0 = false;
+	static bool update_cpu4 = false;
+	int cpu = 0;
 
 	if (!enable_suspend_freqs)
 		return;
@@ -480,24 +484,38 @@ void set_suspend_cpufreq(void)
 		if (!cpu0_suspend_min_freq || !cpu0_suspend_max_freq)
 			goto cpu4;
 			
-			/* set min/max cpu0 freq for suspend */
-			if (cpufreq_update_freq(0, cpu0_suspend_min_freq, cpu0_suspend_max_freq)) {
-				pr_err("%s: failed to update cpu0 while suspend !\n", __func__);
-				update_cpu0 = false;
-			} else {
-				update_cpu0 = true;
+			for_each_cpu(cpu, &hmp_slow_cpu_mask) {
+				if (cpu_online(cpu)) {
+					/* set min/max cpu0 freq for suspend */
+					if (cpufreq_update_freq(cpu, cpu0_suspend_min_freq, cpu0_suspend_max_freq)) {
+						pr_err("%s: failed to update cpu0 while suspend !\n", __func__);
+						update_cpu0 = false;
+					} else {
+						update_cpu0 = true;
+						break;
+					}
+				} else {
+					update_cpu0 = false;
+				}
 			}
 
 cpu4:
 		if (!cpu4_suspend_min_freq || !cpu4_suspend_max_freq)
 			goto out;
 
-			/* set min/max cpu4 freq for suspend */
-			if (cpufreq_update_freq(4, cpu4_suspend_min_freq, cpu4_suspend_max_freq)) {
-				pr_err("%s: failed to update cpu4 while suspend !\n", __func__);
-				update_cpu4 = false;
-			} else {
-				update_cpu4 = true;
+			for_each_cpu(cpu, &hmp_fast_cpu_mask) {
+				if (cpu_online(cpu)) {
+					/* set min/max cpu4 freq for suspend */
+					if (cpufreq_update_freq(cpu, cpu4_suspend_min_freq, cpu4_suspend_max_freq)) {
+						pr_err("%s: failed to update cpu4 while suspend !\n", __func__);
+						update_cpu4 = false;
+					} else {
+						update_cpu4 = true;
+						break;
+					}
+				} else {
+					update_cpu4 = false;
+				}
 			}
 
 out:
@@ -511,18 +529,32 @@ out:
 		/* resumed */
 		/* restore previous min/max cpufreq */
 		if (update_cpu0) {
-			if (cpufreq_update_freq(0, cpu0_min_freq, cpu0_max_freq))
-				pr_err("%s: failed to update cpu0 while resume !\n", __func__);
+			for_each_cpu(cpu, &hmp_slow_cpu_mask) {
+				if (cpu_online(cpu)) {
+					if (cpufreq_update_freq(cpu, cpu0_min_freq, cpu0_max_freq))
+						pr_err("%s: failed to update cpu0 while resume !\n", __func__);
+					break;
+				}
+			}
 		}
 		if (update_cpu4) {
-			if (cpufreq_update_freq(4, cpu4_min_freq, cpu4_max_freq))
-				pr_err("%s: failed to update cpu4 while resume !\n", __func__);
+			for_each_cpu(cpu, &hmp_fast_cpu_mask) {
+				if (cpu_online(cpu)) {
+					if (cpufreq_update_freq(cpu, cpu4_min_freq, cpu4_max_freq))
+						pr_err("%s: failed to update cpu4 while resume !\n", __func__);
+					break;
+				}
+			}
 		}
 		update_cpu0 = false;
 		update_cpu4 = false;
 	}
 
 	update_gov_tunables(is_suspend);
+#ifdef CONFIG_HOTPLUG_CPU
+	should_hotplug_big_cpu();
+#endif
+
 }
 #endif // CONFIG_CPU_FREQ_SUSPEND
 
