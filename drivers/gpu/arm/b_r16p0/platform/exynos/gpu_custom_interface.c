@@ -79,7 +79,7 @@ unsigned int gpu_up_threshold = 75;
 bool gpu_boost = true;
 unsigned int gpu_down_threshold = 0;
 #define DOWN_THRESHOLD_MARGIN		(25)
-#define GPU_MIN_UP_THRESHOLD		(45)
+#define GPU_MIN_UP_THRESHOLD		(40)
 #define GPU_MAX_UP_THRESHOLD		(100)
 #define GPU_FREQ_STEP_0			(260)
 #define GPU_FREQ_STEP_1			(338)
@@ -2168,7 +2168,7 @@ static int gpu_dvfs_check_thread(void *nothing)
 					__func__ , GPU_DVFS_AVOID_SHUTDOWN_TEMP, gpu_temp, user_gpu_dvfs_max_temp, gpu_dvfs_limit);
 			sanitize_gpu_dvfs(true);
 
-		} else if (gpu_temp > gpu_dvfs_max_temp) {
+		} else if (gpu_temp >= gpu_dvfs_max_temp) {
 			if (gpu_dvfs_limit == FREQ_STEP_8)
 				freq = FREQ_STEP_7;
 			else if (gpu_dvfs_limit == FREQ_STEP_7)
