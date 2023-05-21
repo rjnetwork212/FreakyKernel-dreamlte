@@ -714,6 +714,8 @@ static ssize_t store_##file_name					\
 	return ret ? ret : count;					\
 }
 
+store_one(scaling_min_freq, min);
+store_one(scaling_max_freq, max);
 store_one(user_scaling_min_freq, min);
 store_one(user_scaling_max_freq, max);
 
@@ -890,8 +892,8 @@ cpufreq_freq_attr_ro(related_cpus);
 cpufreq_freq_attr_ro(affected_cpus);
 cpufreq_freq_attr_ro(scaling_min_freq);
 cpufreq_freq_attr_ro(scaling_max_freq);
-cpufreq_freq_attr_rw(user_scaling_min_freq);
-cpufreq_freq_attr_rw(user_scaling_max_freq);
+store_one(user_scaling_min_freq, min);
+store_one(user_scaling_max_freq, max);
 cpufreq_freq_attr_rw(scaling_governor);
 cpufreq_freq_attr_rw(scaling_setspeed);
 
