@@ -31,7 +31,6 @@
 #include <linux/workqueue.h>
 #include <linux/input.h>
 #include <linux/hrtimer.h>
-#include <linux/variant_detection.h>
 #include <asm-generic/cputime.h>
 
 /* Tuneables */
@@ -129,10 +128,13 @@ static struct work_struct dt2w_input_work;
 
 static bool is_suspended(void)
 {
-	if (variant_plus == IS_PLUS)
+	#ifdef CONFIG_IS_PLUS
 		return scr_suspended_plus();
-	else
+	#endif
+	#ifdef CONFIG_NOT_PLUS
 		return scr_suspended();
+	#endif
+
 }
 
 /* Wake Gestures */
@@ -702,7 +704,7 @@ static int __init wake_gestures_init(void)
 {
 	int rc = 0;
 
- 	if (variant_plus == IS_PLUS) {
+ 	#ifdef CONFIG_IS_PLUS
 		sweep_y_limit = SWEEP_Y_LIMIT_PLUS;
 		sweep_x_limit = SWEEP_X_LIMIT_PLUS;
 		sweep_x_b1 = SWEEP_X_B1_PLUS;
@@ -713,7 +715,7 @@ static int __init wake_gestures_init(void)
 		sweep_y_next = SWEEP_Y_NEXT_PLUS;
 		sweep_x_max = SWEEP_X_MAX_PLUS;
 		sweep_edge = SWEEP_EDGE_PLUS;
-	}
+	#endif
 
 	wake_dev = input_allocate_device();
 	if (!wake_dev) {
