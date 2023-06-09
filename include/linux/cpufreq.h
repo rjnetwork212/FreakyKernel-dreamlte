@@ -709,6 +709,7 @@ int cpufreq_generic_init(struct cpufreq_policy *policy,
 
 void acct_update_power(struct task_struct *p, cputime_t cputime);
 
-void sanitize_cpu_dvfs(bool freq, bool temp);
+extern unsigned int cpu4_max_freq;
+extern void sanitize_cpu_dvfs(bool sanitize, bool oc);
 
 #endif /* _LINUX_CPUFREQ_H */
