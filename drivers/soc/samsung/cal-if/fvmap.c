@@ -195,8 +195,6 @@ void print_fvmap(void)
 
 	size = cmucal_get_list_size(ACPM_VCLK_TYPE);
 
-	pr_info("\n\nCUSTOM DVFS TABLE\n\n\n");
-
 	for (i = 0; i < size; i++) {
 		/* load fvmap info */
 		fvmap_header[i].dvfs_type = header[i].dvfs_type;
@@ -350,8 +348,6 @@ static void fvmap_copy_from_sram(void)
 
 	size = cmucal_get_list_size(ACPM_VCLK_TYPE);
 
-	pr_info("\n\nORIGINAL DVFS TABLE\n\n\n");
-
 	for (i = 0; i < size; i++) {
 		/* load fvmap info */
 		fvmap_header[i].dvfs_type = header[i].dvfs_type;
@@ -389,20 +385,20 @@ static void fvmap_copy_from_sram(void)
 		for (j = 0; j < fvmap_header[i].num_of_lv; j++) {
 
 			/* add missing g3d voltages */
-			if (strcmp(vclk->name, "dvfs_g3d") == 0) {
-				if ((old->table[j].rate == 683000) && (old->table[j].volt < 750000))
+			if ((strcmp(vclk->name, "dvfs_g3d") == 0) && (!old->table[j].volt)) {
+				if (old->table[j].rate == 683000)
 					old->table[j].volt = 750000;
-				else if ((old->table[j].rate == 764000) && (old->table[j].volt < 775000))
+				else if (old->table[j].rate == 764000)
 					old->table[j].volt = 775000;
-				else if ((old->table[j].rate == 839000) && (old->table[j].volt < 800000))
+				else if (old->table[j].rate == 839000)
 					old->table[j].volt = 800000;
 			}
 
 			/* add missing mif voltages */
-			if (strcmp(vclk->name, "dvfs_mif") == 0) {
-				if ((old->table[j].rate == 2002000) && (old->table[j].volt < 800000))
+			if ((strcmp(vclk->name, "dvfs_mif") == 0) && (!old->table[j].volt)) {
+				if (old->table[j].rate == 2002000)
 					old->table[j].volt = 800000;
-				else if ((old->table[j].rate == 2093000) && (old->table[j].volt < 825000))
+				else if (old->table[j].rate == 2093000)
 					old->table[j].volt = 825000;
 			}
 
@@ -418,20 +414,13 @@ static void fvmap_copy_from_sram(void)
 			if (strcmp(vclk->name, "dvfs_cpucl0") == 0) {
 				if ((old->table[j].rate == 2652000) && (old->table[j].volt < 1150000))
 					old->table[j].volt = 1150000;
-
 				else if ((old->table[j].rate == 2704000) && (old->table[j].volt < 1175000))
 					old->table[j].volt = 1175000;
-
-				else if ((old->table[j].rate == 2704000) && (old->table[j].volt < 1200000))
-					old->table[j].volt = 1200000;
-
 				else if ((old->table[j].rate == 2808000) && (old->table[j].volt < 1300000))
 					old->table[j].volt = 1300000;
 			}
 
 			new->table[j].rate = old->table[j].rate;
-
-			/* apply optimized voltages */
 			new->table[j].volt = old->table[j].volt;
 			pr_info("  lv : [%7d], volt = %d uV\n",
 				new->table[j].rate, new->table[j].volt);
