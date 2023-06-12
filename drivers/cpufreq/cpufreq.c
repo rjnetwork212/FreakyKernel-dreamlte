@@ -776,8 +776,7 @@ static ssize_t store_user_scaling_max_freq
 			cpu0_max_freq = temp;
 		} else {
 			cpu4_max_freq = temp;
-			sanitize_cpu_dvfs(false);
-			sanitize_cpu_dvfs(true, false);
+			sanitize_cpu_dvfs(false, false);
 		}
 	} else {
 		goto err;
@@ -1360,6 +1359,13 @@ static int cpufreq_online(unsigned int cpu)
 	if (new_policy) {
 		policy->user_policy.min = policy->min;
 		policy->user_policy.max = policy->max;
+		if (policy->cpu == 0) {
+			cpu0_min_freq = policy->min;
+			cpu0_max_freq = policy->max;
+		} else {
+			cpu4_min_freq = policy->min;
+			cpu4_max_freq = policy->max;
+		}
 
 		write_lock_irqsave(&cpufreq_driver_lock, flags);
 		for_each_cpu(j, policy->related_cpus)

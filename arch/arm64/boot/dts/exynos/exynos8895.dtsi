@@ -4937,7 +4937,7 @@
 			input_booster,mif_freqs = <0 0 0>;
 			input_booster,int_freqs = <0 0 0>;
 
-			/* Time table */
+			 Time table 
 			input_booster,head_times = <1000 1000 1000>;
 			input_booster,tail_times = <1000 1000 1000>;
 			input_booster,phase_times = <1000 1000 1000>;
