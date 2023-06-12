@@ -1692,7 +1692,7 @@ static ssize_t set_kernel_sysfs_user_min_clock(struct kobject *kobj, struct kobj
 	if (!platform)
 		return -ENODEV;
 
-	if (sscanf(buf, "%d", &clock)) {
+	if (sscanf(buf, "%d", &val)) {
 
 	if (val == 260000 || val == 338000 || val == 385000 || val == 455000 || val == 546000
 					|| val == 572000 || val == 683000 || val == 764000 || val == 839000) {
@@ -2248,12 +2248,6 @@ static struct kobj_attribute gpu_dvfs_max_temp_attribute =
 
 static struct kobj_attribute gpu_dvfs_peak_temp_attribute =
 	__ATTR(gpu_dvfs_peak_temp, S_IRUGO, show_kernel_sysfs_gpu_dvfs_peak_temp, NULL);
-
-static struct kobj_attribute boost_attribute =
-	__ATTR(boost, S_IRUGO|S_IWUSR, show_kernel_sysfs_boost, set_kernel_sysfs_boost);
-
-static struct kobj_attribute up_threshold_attribute =
-	__ATTR(up_threshold, S_IRUGO|S_IWUSR, show_kernel_sysfs_up_threshold, set_kernel_sysfs_up_threshold);
 #endif /* #ifdef CONFIG_MALI_DVFS */
 
 static struct kobj_attribute gpu_busy_attribute =
@@ -2296,8 +2290,8 @@ static struct attribute *attrs[] = {
 	&user_min_clock_attribute.attr,
 	&gpu_dvfs_max_temp_attribute.attr,
 	&gpu_dvfs_peak_temp_attribute.attr,
-	&boost_attribute.attr,
-	&up_threshold_attribute.attr,
+	/*&boost_attribute.attr,*/
+	/*&up_threshold_attribute.attr,*/
 	&gpu_governor_attribute.attr,
 	&gpu_available_governor_attribute.attr,
 #endif

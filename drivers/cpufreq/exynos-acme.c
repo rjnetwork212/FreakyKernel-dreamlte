@@ -444,7 +444,6 @@ static struct cpufreq_driver exynos_driver = {
 	.resume		= exynos_cpufreq_resume,
 	.attr		= cpufreq_generic_attr,
 };
-/*
 
 #ifdef CONFIG_CPU_FREQ_SUSPEND
 /* suspend min/max cpufreq tunable */

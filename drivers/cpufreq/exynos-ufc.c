@@ -828,9 +828,7 @@ static inline int cpu_dvfs_check_thread(void *nothing)
 		}
 
 		if (cpu_temp >= dvfs_max_temp) {
-			else if (cpu4_dvfs_limit == FREQ_STEP_18)
-				freq = FREQ_STEP_17;
-			else if (cpu4_dvfs_limit == FREQ_STEP_17)
+			if (cpu4_dvfs_limit == FREQ_STEP_17)
 				freq = FREQ_STEP_16;
 			else if (cpu4_dvfs_limit == FREQ_STEP_16)
 				freq = FREQ_STEP_15;
@@ -898,10 +896,8 @@ static inline int cpu_dvfs_check_thread(void *nothing)
 				freq = FREQ_STEP_15;
 			else if (cpu4_dvfs_limit == FREQ_STEP_15)
 				freq = FREQ_STEP_16;
-			else if (cpu4_dvfs_limit == FREQ_STEP_16)
-				freq = FREQ_STEP_17;
 			else
-				freq = FREQ_STEP_18;
+				freq = FREQ_STEP_17;
 		}
 out:
 		prev_temp = cpu_temp;
