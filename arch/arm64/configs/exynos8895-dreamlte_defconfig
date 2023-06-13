@@ -3,6 +3,8 @@
 # Linux/arm64 4.4.302 Kernel Configuration
 #
 CONFIG_WAKE_GESTURES=y
+# CONFIG_IS_PLUS is not set
+CONFIG_NOT_PLUS=y
 
 CONFIG_ARM64=y
 CONFIG_64BIT=y
