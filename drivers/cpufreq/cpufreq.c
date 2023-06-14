@@ -760,7 +760,7 @@ static ssize_t store_user_scaling_max_freq
 			cpu0_max_freq = temp;
 		} else {
 			cpu4_max_freq = temp;
-			sanitize_cpu_dvfs(false, false);
+			sanitize_cpu_dvfs(false);
 		}
 	} else {
 		goto err;

@@ -294,7 +294,7 @@ static int pm_callback_runtime_on(struct kbase_device *kbdev)
 #endif
 	gpu_dvfs_start_env_data_gathering(kbdev);
 	platform->power_status = true;
-#if 0
+
 #ifdef CONFIG_MALI_DVFS
 #ifdef CONFIG_MALI_SEC_CL_BOOST
 	if (platform->dvfs_status && platform->wakeup_lock && !kbdev->pm.backend.metrics.is_full_compute_util)
@@ -305,7 +305,7 @@ static int pm_callback_runtime_on(struct kbase_device *kbdev)
 	else
 		gpu_set_target_clk_vol(platform->cur_clock, false);
 #endif /* CONFIG_MALI_DVFS */
-#endif
+
 	return 0;
 }
 extern void preload_balance_setup(struct kbase_device *kbdev);
