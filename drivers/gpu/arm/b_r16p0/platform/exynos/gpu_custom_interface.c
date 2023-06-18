@@ -59,28 +59,15 @@ static struct task_struct *gpu_dvfs_thread = NULL;
 #define GPU_DVFS_MARGIN_TEMP			(10)	/* °C */
 #define GPU_DVFS_STEP_DOWN_TEMP			(5)	/* °C */
 
-#define FREQ_STEP_0	260000
-#define FREQ_STEP_1	338000
-#define FREQ_STEP_2	385000
-#define FREQ_STEP_3	455000
-#define FREQ_STEP_4	546000
-#define FREQ_STEP_5	572000
-#define FREQ_STEP_6	683000
-#define FREQ_STEP_7	764000
-#define FREQ_STEP_8	839000
+#define FREQ_STEP_0	338000
+#define FREQ_STEP_1	455000
+#define FREQ_STEP_2	572000
+#define FREQ_STEP_3	683000
+#define FREQ_STEP_4	764000
+#define FREQ_STEP_5	83900
 
 static DEFINE_MUTEX(poweroff_lock);
 static inline void sanitize_gpu_dvfs(bool sanitize);
-
-/* for ondemand gov */
-unsigned int gpu_up_threshold = 75;
-bool gpu_boost = true;
-unsigned int gpu_down_threshold = 0;
-#define DOWN_THRESHOLD_MARGIN		(25)
-#define GPU_MIN_UP_THRESHOLD		(40)
-#define GPU_MAX_UP_THRESHOLD		(100)
-#define GPU_FREQ_STEP_0			(260)
-#define GPU_FREQ_STEP_1			(338)
 
 int gpu_pmqos_dvfs_min_lock(int level)
 {
@@ -1659,8 +1646,7 @@ static ssize_t set_kernel_sysfs_user_max_clock(struct kobject *kobj, struct kobj
 		return -ENODEV;
 
 	if (sscanf(buf, "%d", &val)) {
-		if (val == 260000 || val == 338000 || val == 385000 || val == 455000 || val == 546000
-				|| val == 572000 || val == 683000 || val == 764000 || val == 839000) {
+		if (val == 338000 || val == 455000 || val == 572000 || val == 683000 || val == 764000 || val == 839000) {
 			platform->gpu_max_clock = val;
 			sanitize_gpu_dvfs(false);
 			pr_info("gpufreq: new min and max freqs are %d - %d kHz\n", platform->gpu_min_clock, platform->gpu_max_clock);
@@ -1690,8 +1676,7 @@ static ssize_t set_kernel_sysfs_user_min_clock(struct kobject *kobj, struct kobj
 
 	if (sscanf(buf, "%d", &val)) {
 
-	if (val == 260000 || val == 338000 || val == 385000 || val == 455000 || val == 546000
-					|| val == 572000 || val == 683000 || val == 764000 || val == 839000) {
+	if (val == 338000 || val == 455000 || val == 572000 || val == 683000 || val == 764000 || val == 839000) {
 
 			platform->gpu_min_clock = val;
 			pr_info("gpufreq: new min and max freqs are %d - %d kHz\n", platform->gpu_min_clock, platform->gpu_max_clock);
@@ -1730,13 +1715,6 @@ static ssize_t set_kernel_sysfs_gpu_volt(struct kobject *kobj, struct kobj_attri
 {
 	int id = 4; /* dvfs_g3d */
 	unsigned int rate, volt;
-
-#if IS_ENABLED(CONFIG_A2N)
-	if (!a2n_allow) {
-		pr_err("[%s] a2n: unprivileged access !\n",__func__);
-		goto err;
-	}
-#endif
 
 	if (sscanf(buf, "%u %u", &rate, &volt) == 2) {
 		if ((volt < 450000) || (volt > 1000000))
@@ -2163,14 +2141,8 @@ static inline int gpu_dvfs_check_thread(void *nothing)
 				freq = FREQ_STEP_3;
 			else if (gpu_dvfs_limit == FREQ_STEP_3)
 				freq = FREQ_STEP_4;
-			else if (gpu_dvfs_limit == FREQ_STEP_4)
-				freq = FREQ_STEP_5;
-			else if (gpu_dvfs_limit == FREQ_STEP_5)
-				freq = FREQ_STEP_6;
-			else if (gpu_dvfs_limit == FREQ_STEP_6)
-				freq = FREQ_STEP_7;
 			else
-				freq = FREQ_STEP_8;
+				freq = FREQ_STEP_5;
 		}
 out:
 		prev_temp = gpu_temp;
