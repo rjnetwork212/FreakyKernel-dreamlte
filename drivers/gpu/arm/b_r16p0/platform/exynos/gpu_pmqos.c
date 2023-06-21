@@ -114,9 +114,9 @@ int gpu_pm_qos_command(struct exynos_context *platform, gpu_pmqos_state state)
 			pm_qos_update_request(&exynos5_g3d_mif_max_qos, platform->pmqos_mif_max_clock);
 #ifdef CONFIG_MALI_VK_BOOST /* VK JOB Boost */
 		mutex_lock(&platform->gpu_vk_boost_lock);
-		if (platform->ctx_vk_need_qos)
+		if (platform->ctx_vk_need_qos && platform->max_lock == platform->gpu_vk_boost_max_clk_lock) {
 			pm_qos_update_request(&exynos5_g3d_mif_min_qos, platform->gpu_vk_boost_mif_min_clk_lock);
-
+		}
 		mutex_unlock(&platform->gpu_vk_boost_lock);
 #endif
 		pm_qos_update_request(&exynos5_g3d_cpu_cluster0_min_qos, platform->table[platform->step].cpu_little_min_freq);

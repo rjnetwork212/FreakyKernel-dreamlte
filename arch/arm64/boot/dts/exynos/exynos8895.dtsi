@@ -784,13 +784,12 @@
 		g3d_genpd_name = "pd-g3d"; /*KC: pg-g3d, LT,MK: pd-embedded_g3d*/
 		#cooling-cells = <2>; /* min followed by max */
 		governor = "interactive";
-		interactive_info = <0 75 0>;
+		interactive_info = <572000 45 0>;
 		gpu_dvfs_table_size = <6 7>; /*<row col>*/
-		gpu_dvfs_table = <
-		                    839000    43   75   1  2093000   0   0
-		                    764000    42   75   1  2093000   0   0
-		                    683000    38   75   1  2093000   0   0
-		                    572000    47   75   1  1794000   0   0
+		gpu_dvfs_table = <  839000    44   65   1  2093000  0     0
+		                    764000    43   65   1  2093000  0     0
+		                    683000    39   65   1  2093000  0     0
+		                    572000    47   65   1  2093000  0     0
 		                    455000    38   75   1  1540000   0   0
 		                    338000    33   75   1  1352000   0   0 >;
 		gpu_sustainable_info = <0 0 0 0 0>; /* Not used */
@@ -824,13 +823,13 @@
 		gpu_cl_dvfs_start_base = <260000>;
 		gpu_debug_level = <4>; /*DEBUG(1) INFO(2) WARNING(3) ERROR(4)*/
 		gpu_trace_level = <1>; /*TRACE_ALL*/
-		gpu_mo_min_clock = <455000>;
-		gpu_boost_gpu_min_lock = <455000>;
-		gpu_boost_egl_min_lock = <1703000>;
-		gpu_vk_boost_max_lock = <455000>;
-		gpu_vk_boost_mif_min_lock = <1794000>;
+		gpu_mo_min_clock = <260000>;
+		gpu_boost_gpu_min_lock = <0>;
+		gpu_boost_egl_min_lock = <0>;
+		gpu_vk_boost_max_lock = <0>;
+		gpu_vk_boost_mif_min_lock = <2093000>;
 		gpu_bts_support = <1>;
-		gpu_asv_cali_lock_val = <572000>; /*Should check this value when MALI_ASV_CALIBRATION_SUPPORT is enabled*/
+		gpu_asv_cali_lock_val = <0>; /*Should check this value when MALI_ASV_CALIBRATION_SUPPORT is enabled*/
 		gpu_set_pmu_duration_reg = <0x40F0>; /* only for KC for now*/
 		gpu_set_pmu_duration_val = <0xfffff363>; /* only for KC for now*/
 	};

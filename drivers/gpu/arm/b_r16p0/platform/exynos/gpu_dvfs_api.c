@@ -271,9 +271,6 @@ int gpu_dvfs_clock_lock(gpu_dvfs_lock_command lock_command, gpu_dvfs_lock_type l
 		return -1;
 	}
 
-	if ((lock_type != DVFS_LOCK) && (lock_type != PMQOS_LOCK) && (lock_type != BOOST_LOCK))
-		return 0;
-
 	switch (lock_command) {
 	case GPU_DVFS_MAX_LOCK:
 		spin_lock_irqsave(&platform->gpu_dvfs_spinlock, flags);
@@ -638,5 +635,6 @@ int gpu_dvfs_get_max_freq(void)
 
 	DVFS_ASSERT(platform);
 
+	platform->user_max_lock_input = platform->gpu_max_clock;
 	return platform->gpu_max_clock;
 }

@@ -266,8 +266,9 @@ int gpu_vendor_dispatch(struct kbase_context *kctx, u32 flags)
 				platform->ctx_vk_need_qos = true;
 			}
 
-			if (platform->ctx_vk_need_qos == true)
+			if (platform->ctx_vk_need_qos == true && platform->max_lock == platform->gpu_vk_boost_max_clk_lock) {
 				pm_qos_update_request(&exynos5_g3d_mif_min_qos, platform->gpu_vk_boost_mif_min_clk_lock);
+			}
 
 			mutex_unlock(&platform->gpu_vk_boost_lock);
 #endif

@@ -93,7 +93,6 @@ typedef enum {
 #ifdef CONFIG_MALI_ASV_CALIBRATION_SUPPORT
 	ASV_CALI_LOCK,
 #endif
-	DVFS_LOCK,
 	NUMBER_LOCK
 } gpu_dvfs_lock_type;
 
