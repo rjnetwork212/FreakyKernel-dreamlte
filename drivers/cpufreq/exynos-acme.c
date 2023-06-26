@@ -451,22 +451,62 @@ module_param(enable_suspend_freqs, bool, 0644);
 static unsigned int cpu0_suspend_min_freq = 0;
 static unsigned int cpu0_suspend_max_freq = 0;
 module_param(cpu0_suspend_min_freq, uint, 0644);
-module_param(cpu0_suspend_max_freq, uint, 0644);
 
 static unsigned int cpu4_suspend_min_freq = 0;
 static unsigned int cpu4_suspend_max_freq = 0;
 module_param(cpu4_suspend_min_freq, uint, 0644);
-module_param(cpu4_suspend_max_freq, uint, 0644);
 
-static unsigned int cpu0_min_freq = 0;
-static unsigned int cpu0_max_freq = 0;
-module_param(cpu0_min_freq, uint, 0644);
-module_param(cpu0_max_freq, uint, 0644);
+extern unsigned int cpu0_min_freq;
+extern unsigned int cpu0_max_freq;
 
-static unsigned int cpu4_min_freq = 0;
-static unsigned int cpu4_max_freq = 0;
-module_param(cpu4_min_freq, uint, 0644);
-module_param(cpu4_max_freq, uint, 0644);
+extern unsigned int cpu4_min_freq;
+extern unsigned int cpu4_max_freq;
+
+extern bool is_suspend; 
+
+extern void update_gov_tunables(bool);
+
+static int set_cpu0_suspend_max_freq(const char *buf, struct kernel_param *kp)
+{
+	unsigned int tmp;
+
+	if (sscanf(buf, "%u", &tmp)) {
+		if (tmp > 2002000) {
+			goto err;
+		}
+		cpu0_suspend_max_freq = tmp;
+		goto out;
+	}
+
+err:
+	pr_err("[%s] invalid cmd\n",__func__);
+	return -EINVAL;
+
+out:
+	return 0;
+}
+module_param_call(cpu0_suspend_max_freq, set_cpu0_suspend_max_freq, param_get_int, &cpu0_suspend_max_freq, 0664);
+
+static int set_cpu4_suspend_max_freq(const char *buf, struct kernel_param *kp)
+{
+	unsigned int tmp;
+
+	if (sscanf(buf, "%u", &tmp)) {
+		if (tmp > 2808000) {
+			goto err;
+		}
+		cpu4_suspend_max_freq = tmp;
+		goto out;
+	}
+
+err:
+	pr_err("[%s] invalid cmd\n",__func__);
+	return -EINVAL;
+
+out:
+	return 0;
+}
+module_param_call(cpu4_suspend_max_freq, set_cpu4_suspend_max_freq, param_get_int, &cpu4_suspend_max_freq, 0664);
 
 void set_suspend_cpufreq(bool is_suspend)
 {
@@ -501,10 +541,9 @@ cpu4:
 out:
 		if ((!cpu0_suspend_min_freq || !cpu0_suspend_max_freq) && (!cpu4_suspend_min_freq || !cpu4_suspend_max_freq))
 			update_freqs = false;
-		else
+		else 
 			update_freqs = true;
 
-		}
 	} else {
 		/* resumed */
 		/* restore previous min/max cpufreq */

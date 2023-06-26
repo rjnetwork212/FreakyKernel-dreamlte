@@ -813,7 +813,7 @@ static inline int cpu_dvfs_check_thread(void *nothing)
 			goto out;
 		}
 
-		if (freq > FREQ_STEP_12) {
+		if (freq > FREQ_STEP_7) {
 			dvfs_max_temp = oc_cpu_dvfs_max_temp;
 			dvfs_min_temp = oc_cpu_dvfs_min_temp;
 		} else {
@@ -822,19 +822,7 @@ static inline int cpu_dvfs_check_thread(void *nothing)
 		}
 
 		if (cpu_temp >= dvfs_max_temp) {
-			if (cpu4_dvfs_limit == FREQ_STEP_17)
-				freq = FREQ_STEP_16;
-			else if (cpu4_dvfs_limit == FREQ_STEP_16)
-				freq = FREQ_STEP_15;
-			else if (cpu4_dvfs_limit == FREQ_STEP_15)
-				freq = FREQ_STEP_14;
-			else if (cpu4_dvfs_limit == FREQ_STEP_14)
-				freq = FREQ_STEP_13;
-			else if (cpu4_dvfs_limit == FREQ_STEP_13)
-				freq = FREQ_STEP_12;
-			else if (cpu4_dvfs_limit == FREQ_STEP_12)
-				freq = FREQ_STEP_11;
-			else if (cpu4_dvfs_limit == FREQ_STEP_11)
+			if (cpu4_dvfs_limit == FREQ_STEP_11)
 				freq = FREQ_STEP_10;
 			else if (cpu4_dvfs_limit == FREQ_STEP_10)
 				freq = FREQ_STEP_9;
