@@ -537,6 +537,10 @@ void set_suspend_cpufreq(bool is_suspend)
 	static bool update_freqs = false;
 	int cpu;
 
+#ifdef CONFIG_HOTPLUG_CPU
+	should_hotplug_big_cpu();
+#endif
+
 	if (!enable_suspend_freqs)
 		return;
 	if (is_suspend) {
@@ -588,10 +592,6 @@ out:
 	}
 
 	update_gov_tunables(is_suspend);
-#ifdef CONFIG_HOTPLUG_CPU
-	should_hotplug_big_cpu();
-#endif
-
 }
 #endif // CONFIG_CPU_FREQ_SUSPEND
 
