@@ -464,8 +464,6 @@ extern unsigned int cpu4_max_freq;
 
 extern bool is_suspend; 
 
-extern void update_gov_tunables(bool);
-
 static int set_cpu0_suspend_max_freq(const char *buf, struct kernel_param *kp)
 {
 	unsigned int tmp;
@@ -546,8 +544,6 @@ void set_suspend_cpufreq(bool suspend)
 		update_cpu0 = false;
 		update_cpu4 = false;
 	}
-
-	update_gov_tunables(suspend);
 }
 #endif // CONFIG_CPU_FREQ_SUSPEND
 
