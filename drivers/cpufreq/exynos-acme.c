@@ -508,58 +508,46 @@ out:
 }
 module_param_call(cpu4_suspend_max_freq, set_cpu4_suspend_max_freq, param_get_int, &cpu4_suspend_max_freq, 0664);
 
-void set_suspend_cpufreq(bool is_suspend)
+void set_suspend_cpufreq(bool suspend)
 {
-	static bool update_freqs = false;
+	static bool update_cpu0, update_cpu4 = false;
 
 	if (!enable_suspend_freqs)
 		return;
-	if (is_suspend) {
-		if (!cpu0_suspend_min_freq || !cpu0_suspend_max_freq)
-			goto cpu4;
-			
-			/* set min/max cpu0 freq for suspend */
-			if (cpufreq_update_freq(0, cpu0_suspend_min_freq, cpu0_suspend_max_freq)) {
-				pr_err("%s: failed to update cpu0 while suspend !\n", __func__);
-				update_cpu0 = false;
-			} else {
-				update_cpu0 = true;
-			}
 
-cpu4:
-		if (!cpu4_suspend_min_freq || !cpu4_suspend_max_freq)
-			goto out;
+	if (suspend) {
+		if (cpu0_suspend_max_freq) {
+
+			if (!cpu0_suspend_min_freq)
+				cpu0_suspend_min_freq = cpu0_min_freq;
+
+			/* set min/max cpu0 freq for suspend */
+			cpufreq_update_freq(0, cpu0_suspend_min_freq, cpu0_suspend_max_freq);
+			update_cpu0 = true;
+		}
+
+		if (cpu4_suspend_max_freq) {
+
+			if (!cpu4_suspend_min_freq)
+				cpu4_suspend_min_freq = cpu4_min_freq;
 
 			/* set min/max cpu4 freq for suspend */
-			if (cpufreq_update_freq(4, cpu4_suspend_min_freq, cpu4_suspend_max_freq)) {
-				pr_err("%s: failed to update cpu4 while suspend !\n", __func__);
-				update_cpu4 = false;
-			} else {
-				update_cpu4 = true;
-			}
-
-out:
-		if ((!cpu0_suspend_min_freq || !cpu0_suspend_max_freq) && (!cpu4_suspend_min_freq || !cpu4_suspend_max_freq))
-			update_freqs = false;
-		else 
-			update_freqs = true;
-
+			cpufreq_update_freq(4, cpu4_suspend_min_freq, cpu4_suspend_max_freq);
+			update_cpu4 = true;
+		}
 	} else {
-		/* resumed */
+		/* resume */
 		/* restore previous min/max cpufreq */
-		if (update_cpu0) {
-			if (cpufreq_update_freq(0, cpu0_min_freq, cpu0_max_freq))
-				pr_err("%s: failed to update cpu0 while resume !\n", __func__);
-		}
-		if (update_cpu4) {
-			if (cpufreq_update_freq(4, cpu4_min_freq, cpu4_max_freq))
-				pr_err("%s: failed to update cpu4 while resume !\n", __func__);
-		}
+		if (update_cpu0)
+			cpufreq_update_freq(0, cpu0_min_freq, cpu0_max_freq);
+		if (update_cpu4)
+			cpufreq_update_freq(4, cpu4_min_freq, cpu4_max_freq);
+
 		update_cpu0 = false;
 		update_cpu4 = false;
 	}
 
-	update_gov_tunables(is_suspend);
+	update_gov_tunables(suspend);
 }
 #endif // CONFIG_CPU_FREQ_SUSPEND
 
