@@ -68,7 +68,7 @@ static struct task_struct *gpu_dvfs_thread = NULL;
 #define FREQ_STEP_2	572000
 #define FREQ_STEP_3	683000
 #define FREQ_STEP_4	764000
-#define FREQ_STEP_5	83900
+#define FREQ_STEP_5	839000
 
 static DEFINE_MUTEX(poweroff_lock);
 static void sanitize_gpu_dvfs(bool sanitize, bool oc);
@@ -2143,7 +2143,7 @@ static inline int gpu_dvfs_check_thread(void *nothing)
 			goto out;
 		}
 		
-		if (freq > FREQ_STEP_5) {
+		if (freq > FREQ_STEP_2) {
 			dvfs_max_temp = oc_gpu_dvfs_max_temp;
 			dvfs_min_temp = oc_gpu_dvfs_min_temp;
 		} else {
@@ -2152,13 +2152,7 @@ static inline int gpu_dvfs_check_thread(void *nothing)
 		}
 
 		if (gpu_temp >= dvfs_max_temp) {
-			if (gpu_dvfs_limit == FREQ_STEP_8)
-				freq = FREQ_STEP_7;
-			else if (gpu_dvfs_limit == FREQ_STEP_7)
-				freq = FREQ_STEP_6;
-			else if (gpu_dvfs_limit == FREQ_STEP_6)
-				freq = FREQ_STEP_5;
-			else if (gpu_dvfs_limit == FREQ_STEP_5)
+			if (gpu_dvfs_limit == FREQ_STEP_5)
 				freq = FREQ_STEP_4;
 			else if (gpu_dvfs_limit == FREQ_STEP_4)
 				freq = FREQ_STEP_3;
