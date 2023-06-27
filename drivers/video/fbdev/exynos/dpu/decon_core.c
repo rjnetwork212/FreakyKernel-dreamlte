@@ -47,12 +47,7 @@
 #include "displayport.h"
 
 #ifdef CONFIG_CPU_FREQ_SUSPEND
-extern void set_suspend_cpufreq(bool is_suspend);
-#endif
-
-#ifdef CONFIG_PM_DEVFREQ
-extern void set_devfreq_mif_pm_qos(bool is_suspend);
-extern void set_devfreq_disp_pm_qos(bool is_suspend);
+extern void set_suspend_cpufreq(bool);
 #endif
 
 bool is_suspend = false;
@@ -971,19 +966,18 @@ blank_exit:
 	decon_hiber_unblock(decon);
 	decon_info("%s -\n", __func__);
 
-	if (blank_mode == FB_BLANK_UNBLANK)
+	if (blank_mode == FB_BLANK_UNBLANK) {
 		is_suspend = false;
-	else
-		is_suspend = true;
-
 #ifdef CONFIG_CPU_FREQ_SUSPEND
-	set_suspend_cpufreq(is_suspend);
+		set_suspend_cpufreq(false);
 #endif
+	} else {
+		is_suspend = true;
+#ifdef CONFIG_CPU_FREQ_SUSPEND
+		set_suspend_cpufreq(true);
+#endif
+	}
 
-#ifdef CONFIG_PM_DEVFREQ
-	set_devfreq_mif_pm_qos(is_suspend);
-	set_devfreq_disp_pm_qos(is_suspend);
-#endif
 	return ret;
 }
 

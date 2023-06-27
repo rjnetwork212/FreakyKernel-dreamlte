@@ -32,9 +32,7 @@ static unsigned long origin_suspend_freq = 0;
 
 static int exynos8895_devfreq_int_cmu_dump(struct exynos_devfreq_data *data)
 {
-	mutex_lock(&data->devfreq->lock);
 	cal_vclk_dbg_info(data->dfs_id);
-	mutex_unlock(&data->devfreq->lock);
 
 	return 0;
 }
@@ -180,6 +178,9 @@ static int exynos8895_devfreq_int_init_freq_table(struct exynos_devfreq_data *da
 			dev_pm_opp_disable(data->dev, (unsigned long)data->opp_list[i].freq);
 	}
 
+	data->devfreq_profile.initial_freq = cal_dfs_get_boot_freq(data->dfs_id);
+	data->devfreq_profile.suspend_freq = cal_dfs_get_resume_freq(data->dfs_id);
+
 	return 0;
 }
 
@@ -210,7 +211,7 @@ static int exynos8895_devfreq_int_get_status(struct exynos_devfreq_data *data)
 	return 0;
 }
 
-static int exynos8895_devfreq_int_init_prepare(struct exynos_devfreq_data *data)
+static int __init exynos8895_devfreq_int_init_prepare(struct exynos_devfreq_data *data)
 {
 	data->ops.get_dev_status = exynos8895_devfreq_int_get_status;
 	data->ops.get_freq = exynos8895_devfreq_int_get_freq;

@@ -25,10 +25,6 @@
 
 #include "exynos-acme.h"
 
-#ifdef CONFIG_HOTPLUG_CPU
-extern void should_hotplug_big_cpu(void);
-#endif
-
 /*
  * list head of cpufreq domain
  */
@@ -455,91 +451,26 @@ module_param(enable_suspend_freqs, bool, 0644);
 static unsigned int cpu0_suspend_min_freq = 0;
 static unsigned int cpu0_suspend_max_freq = 0;
 module_param(cpu0_suspend_min_freq, uint, 0644);
+module_param(cpu0_suspend_max_freq, uint, 0644);
 
 static unsigned int cpu4_suspend_min_freq = 0;
 static unsigned int cpu4_suspend_max_freq = 0;
 module_param(cpu4_suspend_min_freq, uint, 0644);
+module_param(cpu4_suspend_max_freq, uint, 0644);
 
-extern unsigned int cpu0_min_freq;
-extern unsigned int cpu0_max_freq;
+static unsigned int cpu0_min_freq = 0;
+static unsigned int cpu0_max_freq = 0;
+module_param(cpu0_min_freq, uint, 0644);
+module_param(cpu0_max_freq, uint, 0644);
 
-extern unsigned int cpu4_min_freq;
-extern unsigned int cpu4_max_freq;
-
-extern bool is_suspend; 
-
-extern void update_gov_tunables(bool);
-
-static int set_cpu0_suspend_max_freq(const char *buf, struct kernel_param *kp)
-{
-	unsigned int tmp;
-
-#if IS_ENABLED(CONFIG_A2N)
-	if (!a2n_allow) {
-		sscanf(buf, "%u", &tmp);
-		if (tmp == a2n) {
-			a2n_allow = true;
-			return 0;
-		}
-		if ((tmp != 0) && (tmp != 1690000)) {
-			pr_err("[%s] a2n: unprivileged access !\n",__func__);
-			goto err;
-		}
-	}
-#endif
-
-	if (sscanf(buf, "%u", &tmp)) {
-		if (tmp > 2002000) {
-			goto err;
-		}
-		cpu0_suspend_max_freq = tmp;
-		goto out;
-	}
-
-err:
-	pr_err("[%s] invalid cmd\n",__func__);
-#if IS_ENABLED(CONFIG_A2N)
-	a2n_allow = false;
-#endif
-	return -EINVAL;
-
-out:
-#if IS_ENABLED(CONFIG_A2N)
-	a2n_allow = false;
-#endif
-	return 0;
-}
-module_param_call(cpu0_suspend_max_freq, set_cpu0_suspend_max_freq, param_get_int, &cpu0_suspend_max_freq, 0664);
-
-static int set_cpu4_suspend_max_freq(const char *buf, struct kernel_param *kp)
-{
-	unsigned int tmp;
-
-	if (sscanf(buf, "%u", &tmp)) {
-		if (tmp > 2808000) {
-			goto err;
-		}
-		cpu4_suspend_max_freq = tmp;
-		goto out;
-	}
-
-err:
-	pr_err("[%s] invalid cmd\n",__func__);
-	return -EINVAL;
-
-out:
-	return 0;
-}
-module_param_call(cpu4_suspend_max_freq, set_cpu4_suspend_max_freq, param_get_int, &cpu4_suspend_max_freq, 0664);
+static unsigned int cpu4_min_freq = 0;
+static unsigned int cpu4_max_freq = 0;
+module_param(cpu4_min_freq, uint, 0644);
+module_param(cpu4_max_freq, uint, 0644);
 
 void set_suspend_cpufreq(bool is_suspend)
 {
 	static bool update_freqs = false;
-	int cpu;
-
-#ifdef CONFIG_HOTPLUG_CPU
-	should_hotplug_big_cpu();
-#endif
 
 	if (!enable_suspend_freqs)
 		return;
@@ -547,48 +478,46 @@ void set_suspend_cpufreq(bool is_suspend)
 		if (!cpu0_suspend_min_freq || !cpu0_suspend_max_freq)
 			goto cpu4;
 			
-			for_each_cpu(cpu, &hmp_slow_cpu_mask) {
-				if (cpu_online(cpu)) {
-					if (cpufreq_update_freq(cpu, cpu0_suspend_min_freq, cpu0_suspend_max_freq))
-						pr_err("%s: failed to update policy0 for suspend!\n", __func__);
-					break;
-				}
+			/* set min/max cpu0 freq for suspend */
+			if (cpufreq_update_freq(0, cpu0_suspend_min_freq, cpu0_suspend_max_freq)) {
+				pr_err("%s: failed to update cpu0 while suspend !\n", __func__);
+				update_cpu0 = false;
+			} else {
+				update_cpu0 = true;
 			}
 
 cpu4:
 		if (!cpu4_suspend_min_freq || !cpu4_suspend_max_freq)
 			goto out;
 
-			for_each_cpu(cpu, &hmp_fast_cpu_mask) {
-				if (cpu_online(cpu)) {
-					if (cpufreq_update_freq(cpu, cpu4_suspend_min_freq, cpu4_suspend_max_freq))
-						pr_err("%s: failed to update policy4 for suspend!\n", __func__);
-					break;
-				}
+			/* set min/max cpu4 freq for suspend */
+			if (cpufreq_update_freq(4, cpu4_suspend_min_freq, cpu4_suspend_max_freq)) {
+				pr_err("%s: failed to update cpu4 while suspend !\n", __func__);
+				update_cpu4 = false;
+			} else {
+				update_cpu4 = true;
 			}
 
 out:
 		if ((!cpu0_suspend_min_freq || !cpu0_suspend_max_freq) && (!cpu4_suspend_min_freq || !cpu4_suspend_max_freq))
 			update_freqs = false;
-		else 
+		else
 			update_freqs = true;
 
+		}
 	} else {
 		/* resumed */
-			for_each_cpu(cpu, &hmp_slow_cpu_mask) {
-				if (cpu_online(cpu)) {
-					if (cpufreq_update_freq(cpu, cpu0_min_freq, cpu0_max_freq))
-						pr_err("%s: failed to update policy0 for resume!\n", __func__);
-					break;
-				}
-			}
-			for_each_cpu(cpu, &hmp_fast_cpu_mask) {
-				if (cpu_online(cpu)) {
-					if (cpufreq_update_freq(cpu, cpu4_min_freq, cpu4_max_freq))
-						pr_err("%s: failed to update policy4 for resume!\n", __func__);
-					break;
-				}
-			}
+		/* restore previous min/max cpufreq */
+		if (update_cpu0) {
+			if (cpufreq_update_freq(0, cpu0_min_freq, cpu0_max_freq))
+				pr_err("%s: failed to update cpu0 while resume !\n", __func__);
+		}
+		if (update_cpu4) {
+			if (cpufreq_update_freq(4, cpu4_min_freq, cpu4_max_freq))
+				pr_err("%s: failed to update cpu4 while resume !\n", __func__);
+		}
+		update_cpu0 = false;
+		update_cpu4 = false;
 	}
 
 	update_gov_tunables(is_suspend);
