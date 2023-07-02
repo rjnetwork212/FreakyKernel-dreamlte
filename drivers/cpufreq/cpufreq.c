@@ -678,8 +678,6 @@ show_one(cpuinfo_max_freq, cpuinfo.max_freq);
 show_one(cpuinfo_transition_latency, cpuinfo.transition_latency);
 show_one(scaling_min_freq, min);
 show_one(scaling_max_freq, max);
-show_one(user_scaling_min_freq, min);
-show_one(user_scaling_max_freq, max);
 
 static ssize_t show_scaling_cur_freq(struct cpufreq_policy *policy, char *buf)
 {
@@ -719,7 +717,7 @@ int cpufreq_update_freq(int cpu, unsigned int min, unsigned int max)
 }
 EXPORT_SYMBOL(cpufreq_update_freq);
 
-static ssize_t store_user_scaling_min_freq
+static ssize_t store_scaling_min_freq
 (struct cpufreq_policy *policy, const char *buf, size_t count)
 {
 	int ret, temp;
@@ -743,7 +741,7 @@ err:
 	pr_err("[%s] invalid cmd\n",__func__);
 	return ret ? ret : count;
 }
-static ssize_t store_user_scaling_max_freq
+static ssize_t store_scaling_max_freq
 (struct cpufreq_policy *policy, const char *buf, size_t count)
 {
 	int ret, temp;
@@ -942,10 +940,8 @@ cpufreq_freq_attr_ro(scaling_cur_freq);
 cpufreq_freq_attr_ro(bios_limit);
 cpufreq_freq_attr_ro(related_cpus);
 cpufreq_freq_attr_ro(affected_cpus);
-cpufreq_freq_attr_ro(scaling_min_freq);
-cpufreq_freq_attr_ro(scaling_max_freq);
-cpufreq_freq_attr_rw(user_scaling_min_freq);
-cpufreq_freq_attr_rw(user_scaling_max_freq);
+cpufreq_freq_attr_rw(scaling_min_freq);
+cpufreq_freq_attr_rw(scaling_max_freq);
 cpufreq_freq_attr_rw(scaling_governor);
 cpufreq_freq_attr_rw(scaling_setspeed);
 
@@ -955,8 +951,6 @@ static struct attribute *default_attrs[] = {
 	&cpuinfo_transition_latency.attr,
 	&scaling_min_freq.attr,
 	&scaling_max_freq.attr,
-	&user_scaling_min_freq.attr,
-	&user_scaling_max_freq.attr,
 	&affected_cpus.attr,
 	&related_cpus.attr,
 	&scaling_governor.attr,
