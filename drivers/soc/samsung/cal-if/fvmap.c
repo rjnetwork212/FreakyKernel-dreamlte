@@ -340,7 +340,7 @@ static void fvmap_copy_from_sram(void __iomem *map_base, void __iomem *sram_base
 				else if (old->table[j].rate == 1898000)
 					old->table[j].volt = 1150000;
 				else if (old->table[j].rate == 2002000)
-					old->table[j].volt = 1300000;
+					old->table[j].volt = 1350000;
 			}
 
 			/* hardcoded cpucl0 voltages */
@@ -352,7 +352,7 @@ static void fvmap_copy_from_sram(void __iomem *map_base, void __iomem *sram_base
 				else if (old->table[j].rate == 2704000)
 					old->table[j].volt = 1150000;
 				else if (old->table[j].rate == 2808000)
-					old->table[j].volt = 1300000;
+					old->table[j].volt = 1350000;
 			}
 
 			/* hardcoded mif voltages */
