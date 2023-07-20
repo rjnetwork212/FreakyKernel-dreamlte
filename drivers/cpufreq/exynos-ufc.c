@@ -34,19 +34,24 @@
 /* custom DVFS */
 static unsigned int user_cpu_dvfs_max_temp = 60;
 static unsigned int cpu_dvfs_max_temp = 0;
+static unsigned int cpu_dvfs_min_temp = 0;
+static unsigned int user_cpu_dvfs_shutdown_temp = 110;
+static unsigned int cpu_dvfs_shutdown_temp = 110;	/* °C */
+static unsigned int cpu_dvfs_avoid_shutdown_temp = 0;	/* °C */
 static unsigned int cpu_dvfs_peak_temp = 0;
 static int cpu_temp = 0;
 static unsigned int cpu_dvfs_sleep_time = 4;	/* ms */
 static struct pm_qos_request cpu_maxlock_cl1;
 static unsigned int cpu4_dvfs_limit = 0;
-static unsigned int cpu_dvfs_min_temp = 0;
 static struct task_struct *cpu_dvfs_thread = NULL;
+static bool enable_cpu_thermal_throttling = true;
+static bool user_enable_cpu_thermal_throttling = true;
 
-#define CPU_DVFS_RANGE_TEMP_MIN			(50)	/* °C */
-#define CPU_DVFS_TJMAX				(100)	/* °C */
-#define CPU_DVFS_AVOID_SHUTDOWN_TEMP		(105)	/* °C */
-#define CPU_DVFS_SHUTDOWN_TEMP			(110)	/* °C */
-#define CPU_DVFS_MARGIN_TEMP			(10)	/* °C */
+
+#define CPU_DVFS_RANGE_TEMP_MIN			(30)	/* °C */
+#define CPU_DVFS_RANGE_TEMP_MAX			(200)	/* °C */
+#define CPU_DVFS_TJMAX				(120)	/* °C */
+#define CPU_DVFS_MARGIN_TEMP			(5)	/* °C */
 #define CPU_DVFS_STEP_DOWN_TEMP			(5)	/* °C */
 
 /* Cluster 1 big cpu */
@@ -583,31 +588,86 @@ static ssize_t store_execution_mode_change(struct kobject *kobj, struct attribut
 */
 	return count;
 }
-
-static ssize_t show_cpu_dvfs_max_temp(struct kobject *kobj, struct attribute *attr, char *buf)
+static ssize_t show_cpu_dvfs_debug_info(struct kobject *kobj, struct attribute *attr, char *buf)
 {
 	sprintf(buf, "%s[cpu_temp]\t%d °C\n",buf, cpu_temp);
 	sprintf(buf, "%s[peak_temp]\t%u °C\n",buf, cpu_dvfs_peak_temp);
 	sprintf(buf, "%s[user_max_temp]\t%u °C\n",buf, user_cpu_dvfs_max_temp);
-	sprintf(buf, "%s[cal_max_temp]\t%u °C\n",buf, cpu_dvfs_max_temp);
+	sprintf(buf, "%s[max_temp]\t%u °C\n",buf, cpu_dvfs_max_temp);
+	sprintf(buf, "%s[min_temp]\t%u °C\n",buf, cpu_dvfs_min_temp);
 	sprintf(buf, "%s[tjmax]\t\t%d °C\n",buf, (int)CPU_DVFS_TJMAX);
-	sprintf(buf, "%s[dvfs_avoid_shutdown_temp]\t%d °C\n",buf, (int)CPU_DVFS_AVOID_SHUTDOWN_TEMP);
-	sprintf(buf, "%s[dvfs_shutdown_temp]\t%d °C\n",buf, (int)CPU_DVFS_SHUTDOWN_TEMP);
+	sprintf(buf, "%s[dvfs_avoid_shutdown_temp]\t%u °C\n",buf, cpu_dvfs_avoid_shutdown_temp);
+	sprintf(buf, "%s[dvfs_shutdown_temp]\t%u °C\n",buf, cpu_dvfs_shutdown_temp);
 	sprintf(buf, "%s[cpu4_max_freq]\t%u KHz\n",buf, cpu4_max_freq);
 	sprintf(buf, "%s[cpu4_dvfs_limit]\t%u KHz\n",buf, cpu4_dvfs_limit);
+	sprintf(buf, "%s[user_enable_cpu_thermal_throttling]\t%d\n",buf, user_enable_cpu_thermal_throttling);
+	sprintf(buf, "%s[enable_cpu_thermal_throttling]\t%d\n",buf, enable_cpu_thermal_throttling);
+	return strlen(buf);
+}
+
+static ssize_t show_enable_cpu_thermal_throttling(struct kobject *kobj, struct attribute *attr, char *buf)
+{
+		sprintf(buf, "%d", enable_cpu_thermal_throttling);
+}
+
+static ssize_t store_enable_cpu_thermal_throttling(struct kobject *kobj, struct attribute *attr, const char *buf, size_t count)
+{
+	unsigned int tmp = 1;
+
+	if (sscanf(buf, "%u", &tmp))
+		if ((tmp > 1) || (tmp < 0)) {
+			goto err;
+		}
+		if (tmp == 1) {
+			user_enable_cpu_thermal_throttling = true;
+		} else if (tmp == 0) {
+			user_enable_cpu_thermal_throttling = false;
+		}		
+		goto out;
+
+err:
+	pr_err("[%s] invalid cmd\n",__func__);
+	return -EINVAL;
+
+out:
+	sanitize_cpu_dvfs(false);
+	return count;
+}
+
+static ssize_t show_cpu_dvfs_shutdown_temp(struct kobject *kobj, struct attribute *attr, char *buf)
+{
+	sprintf(buf, "%u", cpu_dvfs_shutdown_temp);
+	return strlen(buf);
+}
+
+static ssize_t store_cpu_dvfs_shutdown_temp(struct kobject *kobj, struct attribute *attr, const char *buf, size_t count)
+{
+	unsigned int tmp = 0;
+
+	if (sscanf(buf, "%u", &tmp)) {
+		if (tmp < CPU_DVFS_RANGE_TEMP_MIN || tmp > CPU_DVFS_RANGE_TEMP_MAX) {
+			pr_err("%s: CPU DVFS: out of range %d - %d\n", __func__ , (int)CPU_DVFS_RANGE_TEMP_MIN , (int)CPU_DVFS_RANGE_TEMP_MAX);
+			goto err;
+		}
+	}
+out:
+	user_cpu_dvfs_shutdown_temp = tmp;
+	sanitize_cpu_dvfs(false);
+	return count;
+err:
+	pr_err("%s: CPU DVFS: invalid cmd\n", __func__);
+	return -EINVAL;
+}
+
+static ssize_t show_cpu_dvfs_max_temp(struct kobject *kobj, struct attribute *attr, char *buf)
+{
+	sprintf(buf, "%u", cpu_dvfs_max_temp);
 	return strlen(buf);
 }
 
 static ssize_t store_cpu_dvfs_max_temp(struct kobject *kobj, struct attribute *attr, const char *buf, size_t count)
 {
 	unsigned int tmp = 0;
-	static bool init = false;
-
-	if (!init) {
-		init = true;
-		tmp = 65;
-		goto out;
-	}
 
 	if (sscanf(buf, "%u", &tmp)) {
 		if (tmp < CPU_DVFS_RANGE_TEMP_MIN || tmp > CPU_DVFS_TJMAX) {
@@ -626,7 +686,7 @@ err:
 
 static ssize_t show_cpu_dvfs_peak_temp(struct kobject *kobj, struct attribute *attr, char *buf)
 {
-	sprintf(buf, "%s[peak_temp]\t%u °C\n",buf, cpu_dvfs_peak_temp);
+	sprintf(buf, "%u" ,buf, cpu_dvfs_peak_temp);
 	return strlen(buf);
 }
 
@@ -659,13 +719,6 @@ static ssize_t store_cpu_big_volt(struct kobject *kobj, struct attribute *attr, 
 	int id = 2; /* dvfs_cpucl0 */
 	unsigned int rate, volt;
 
-#if IS_ENABLED(CONFIG_A2N)
-	if (!a2n_allow) {
-		pr_err("[%s] a2n: unprivileged access !\n",__func__);
-		goto err;
-	}
-#endif
-
 	if (sscanf(buf, "%u %u", &rate, &volt) == 2) {
 		if ((volt < 450000) || (volt > 1400000))
 			goto err;
@@ -682,21 +735,11 @@ static ssize_t store_update_dvfs_table(struct kobject *kobj, struct attribute *a
 {
 	unsigned int id, rate, volt;
 
-#if IS_ENABLED(CONFIG_A2N)
-	if (!a2n_allow) {
-		pr_err("[%s] a2n: unprivileged access !\n",__func__);
-		goto err;
-	}
-#endif
-
 	if (sscanf(buf, "%u %u %u", &id, &rate, &volt) == 3) {
 		update_fvmap(id, rate, volt);
 		pr_info("%s: CPU DVFS update id: %u - rate: %u kHz - volt: %u uV\n", __func__, id, rate, volt);
 		return count;
 	}
-
-err:
-	return -EINVAL;
 }
 
 static ssize_t store_print_dvfs_table(struct kobject *kobj, struct attribute *attr, const char *buf, size_t count)
@@ -725,12 +768,15 @@ static inline void set_cpu_dvfs_limit(unsigned int freq)
 inline void sanitize_cpu_dvfs(bool sanitize)
 {
 	if (!sanitize) {
+		cpu_dvfs_shutdown_temp = user_cpu_dvfs_shutdown_temp;
 		cpu_dvfs_max_temp = user_cpu_dvfs_max_temp;
+		enable_cpu_thermal_throttling = user_enable_cpu_thermal_throttling;
 		cpu_dvfs_peak_temp = 0;
 	} else {
 		cpu_dvfs_max_temp -= CPU_DVFS_STEP_DOWN_TEMP;
 	}
 	cpu_dvfs_min_temp = (cpu_dvfs_max_temp - CPU_DVFS_MARGIN_TEMP);
+	cpu_dvfs_avoid_shutdown_temp = (cpu_dvfs_shutdown_temp - CPU_DVFS_MARGIN_TEMP);
 }
 
 static inline int cpu_dvfs_check_thread(void *nothing)
@@ -763,12 +809,12 @@ static inline int cpu_dvfs_check_thread(void *nothing)
 		if (cpu_temp > cpu_dvfs_peak_temp)
 			cpu_dvfs_peak_temp = cpu_temp;
 
-		if (cpu_temp >= CPU_DVFS_SHUTDOWN_TEMP) {
+		if (cpu_temp >= cpu_dvfs_shutdown_temp) {
 			sanitize_cpu_dvfs(true);
 			freq = FREQ_STEP_0;
 			set_cpu_dvfs_limit(freq);
-			pr_err("%s: CPU DVFS: CPU_DVFS_SHUTDOWN_TEMP %u C reached! - TEMP: %d C ! - cpu_dvfs_max_temp: %u C - cpu4_dvfs_limit: %u KHz\n", 
-					__func__ , CPU_DVFS_SHUTDOWN_TEMP, cpu_temp, cpu_dvfs_max_temp, cpu4_dvfs_limit);
+			pr_err("%s: CPU DVFS: cpu_dvfs_shutdown_temp %u C reached! - TEMP: %d C ! - cpu_dvfs_max_temp: %u C - cpu4_dvfs_limit: %u KHz\n", 
+					__func__ , cpu_dvfs_shutdown_temp, cpu_temp, cpu_dvfs_max_temp, cpu4_dvfs_limit);
 			pr_err("%s: CPU DVFS: shutting down ...\n", __func__);
 			mutex_lock(&poweroff_lock);
 			/*
@@ -779,14 +825,14 @@ static inline int cpu_dvfs_check_thread(void *nothing)
 			orderly_poweroff(true);
 			mutex_unlock(&poweroff_lock);
 		}
-
-		if (cpu_temp >= CPU_DVFS_AVOID_SHUTDOWN_TEMP) {
+		if (enable_cpu_thermal_throttling) {
+		if (cpu_temp >= cpu_dvfs_avoid_shutdown_temp) {
 			sanitize_cpu_dvfs(true);
-			if (freq > FREQ_STEP_7)
-				freq = FREQ_STEP_7;
+			if (freq > FREQ_STEP_2)
+				freq = FREQ_STEP_2;
 
-			pr_warn("%s: CPU DVFS: CPU_DVFS_AVOID_SHUTDOWN_TEMP %u C reached! - TEMP: %d C ! - cpu_dvfs_max_temp: %u C - cpu4_dvfs_limit: %u KHz\n", 
-					__func__ , CPU_DVFS_AVOID_SHUTDOWN_TEMP, cpu_temp, cpu_dvfs_max_temp, cpu4_dvfs_limit);
+			pr_warn("%s: CPU DVFS: cpu_dvfs_avoid_shutdown_temp %u C reached! - TEMP: %d C ! - cpu_dvfs_max_temp: %u C - cpu4_dvfs_limit: %u KHz\n", 
+					__func__ , cpu_dvfs_avoid_shutdown_temp, cpu_temp, cpu_dvfs_max_temp, cpu4_dvfs_limit);
 			goto out;
 		}
 
@@ -838,6 +884,7 @@ static inline int cpu_dvfs_check_thread(void *nothing)
 			else
 				freq = FREQ_STEP_11;
 		}
+	}
 out:
 		prev_temp = cpu_temp;
 		set_cpu_dvfs_limit(freq);
@@ -848,6 +895,14 @@ out:
 	return 0;
 }
 
+static struct global_attr sysfs_cpu_dvfs_shutdown_temp =
+__ATTR(cpu_dvfs_shutdown_temp, 0644,
+		show_cpu_dvfs_shutdown_temp, store_cpu_dvfs_shutdown_temp);
+static struct global_attr sysfs_enable_cpu_thermal_throttling = 
+__ATTR(enable_cpu_thermal_throttling, 0644,
+		show_enable_cpu_thermal_throttling, store_enable_cpu_thermal_throttling);
+static struct global_attr debug_info =
+__ATTR(cpu_dvfs_debug_info, 0444, show_cpu_dvfs_debug_info, NULL);
 static struct global_attr cpufreq_table =
 __ATTR(cpufreq_table, 0444, show_cpufreq_table, NULL);
 static struct global_attr cpufreq_min_limit =
@@ -903,6 +958,13 @@ static __init void init_sysfs(void)
 
 	if (sysfs_create_file(power_kobj, &sysfs_cpu_dvfs_peak_temp.attr))
 		pr_err("CPU DVFS: failed to create cpu_dvfs_peak_temp node\n");
+	if (sysfs_create_file(power_kobj, &debug_info.attr))
+		pr_err("CPU DVFS: failed to create debug_info node\n");
+	if (sysfs_create_file(power_kobj, &sysfs_enable_cpu_thermal_throttling.attr))
+		pr_err("CPU DVFS: failed to create enable_cpu_thermal_throttling node\n");
+
+	if (sysfs_create_file(power_kobj, &sysfs_cpu_dvfs_shutdown_temp.attr))
+		pr_err("CPU DVFS: failed to create cpu_dvfs_shutdown_temp node\n");
 
 	if (sysfs_create_file(power_kobj, &sysfs_cpu_lit_volt.attr))
 		pr_err("CPU DVFS: failed to create cpu_lit_volt node\n");
