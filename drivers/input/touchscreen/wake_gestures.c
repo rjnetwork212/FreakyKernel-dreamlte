@@ -19,7 +19,6 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/types.h>
@@ -79,6 +78,12 @@
 #define SWEEP_DOWN		0x08
 #define VIB_STRENGTH 		30
 
+#ifdef CONFIG_MACH_EXYNOS8895_DREAMLTE_EUR_OPEN
+#define VARIANT_PLUS 0
+#else
+#define VARIANT_PLUS 1
+#endif
+
 #define WAKE_GESTURES_ENABLED	1
 
 #define LOGTAG			"WG"
@@ -127,14 +132,11 @@ static struct work_struct s2w_input_work;
 static struct work_struct dt2w_input_work;
 
 static bool is_suspended(void)
-{
-	#ifdef CONFIG_IS_PLUS
+{	
+	if (VARIANT_PLUS == 1)
 		return scr_suspended_plus();
-	#endif
-	#ifdef CONFIG_NOT_PLUS
+	else
 		return scr_suspended();
-	#endif
-
 }
 
 /* Wake Gestures */
@@ -704,7 +706,7 @@ static int __init wake_gestures_init(void)
 {
 	int rc = 0;
 
- 	#ifdef CONFIG_IS_PLUS
+ 	if (VARIANT_PLUS == 1) {
 		sweep_y_limit = SWEEP_Y_LIMIT_PLUS;
 		sweep_x_limit = SWEEP_X_LIMIT_PLUS;
 		sweep_x_b1 = SWEEP_X_B1_PLUS;
@@ -715,7 +717,7 @@ static int __init wake_gestures_init(void)
 		sweep_y_next = SWEEP_Y_NEXT_PLUS;
 		sweep_x_max = SWEEP_X_MAX_PLUS;
 		sweep_edge = SWEEP_EDGE_PLUS;
-	#endif
+	}
 
 	wake_dev = input_allocate_device();
 	if (!wake_dev) {
