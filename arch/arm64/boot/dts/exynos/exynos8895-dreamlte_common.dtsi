@@ -320,7 +320,7 @@
 				buck2_reg: BUCK2 {
 					regulator-name = "vdd_cpucl0";
 					regulator-min-microvolt = <450000>;
-					regulator-max-microvolt = <1200000>;
+					regulator-max-microvolt = <1500000>;
 					regulator-always-on;
 					regulator-ramp-delay = <12000>;
 					regulator-initial-mode = <1>;
@@ -329,7 +329,7 @@
 				buck3_reg: BUCK3 {
 					regulator-name = "vdd_cpucl1";
 					regulator-min-microvolt = <450000>;
-					regulator-max-microvolt = <1200000>;
+					regulator-max-microvolt = <1500000>;
 					regulator-always-on;
 					regulator-ramp-delay = <12000>;
 					regulator-initial-mode = <1>;
@@ -2903,7 +2903,7 @@
 		mclk_ch = <1>;
 		sensor_i2c_ch = <1>; /* I2C 1 */
 		sensor_i2c_addr = <0x6A>;
-		
+
 		use_initial_ae;
 
 		gpio_mclk = <&gpk0 1 0x1>;
@@ -3290,7 +3290,7 @@
 					qos,label="BIG";
 					qos,delay_time=<8>;
 					qos,table_size=<18>;
-					qos,table=<2808000 2704000 2652000 2574000 2496000 2314000 2158000 2002000 1937000 1807000 1703000 1469000 
+					qos,table=<2808000 2704000 2652000 2574000 2496000 2314000 2158000 2002000 1937000 1807000 1703000 1469000
 						1261000 1170000 1066000 962000 858000 741000>;
 				};
 
