@@ -374,7 +374,7 @@ static void clear_cover_cmd_work(struct work_struct *work)
 						cover_cmd_work.work);
 
 	if (info->cmd_is_running) {
-		schedule_delayed_work(&info->cover_cmd_work, msecs_to_jiffies(5));
+		queue_delayed_work(system_power_efficient_wq, &info->cover_cmd_work, msecs_to_jiffies(5));
 	} else {
 		/* check lock   */
 		mutex_lock(&info->cmd_lock);
@@ -434,7 +434,7 @@ static ssize_t store_cmd(struct device *dev, struct device_attribute *devattr,
 			if (info->delayed_cmd_param[0] > 1)
 				info->delayed_cmd_param[1] = buf[19]-'0';
 
-			schedule_delayed_work(&info->cover_cmd_work, msecs_to_jiffies(10));
+			queue_delayed_work(system_power_efficient_wq, &info->cover_cmd_work, msecs_to_jiffies(10));
 		}
 		return -EBUSY;
 	}
@@ -448,7 +448,7 @@ static ssize_t store_cmd(struct device *dev, struct device_attribute *devattr,
 			if (info->delayed_cmd_param[0] > 1)
 				info->delayed_cmd_param[1] = buf[19]-'0';
 
-			if(info->delayed_cmd_param[0] == 0) schedule_delayed_work(&info->cover_cmd_work, msecs_to_jiffies(300));
+			if(info->delayed_cmd_param[0] == 0) queue_delayed_work(system_power_efficient_wq, &info->cover_cmd_work, msecs_to_jiffies(300));
 		}
 	}
 

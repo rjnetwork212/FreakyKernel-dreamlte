@@ -483,7 +483,7 @@ static irqreturn_t bq51221_chg_irq_thread(int irq, void *irq_data)
 	struct bq51221_charger_data *charger = irq_data;
 
 	pr_info("%s \n",__func__);
-		schedule_delayed_work(&charger->isr_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &charger->isr_work, 0);
 
 	return IRQ_HANDLED;
 }

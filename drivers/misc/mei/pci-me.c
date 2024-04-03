@@ -220,7 +220,7 @@ static int mei_me_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
 
 	pci_set_drvdata(pdev, dev);
 
-	schedule_delayed_work(&dev->timer_work, HZ);
+	queue_delayed_work(system_power_efficient_wq, &dev->timer_work, HZ);
 
 	/*
 	* For not wake-able HW runtime pm framework
@@ -358,7 +358,7 @@ static int mei_me_pci_resume(struct device *device)
 		return err;
 
 	/* Start timer if stopped in suspend */
-	schedule_delayed_work(&dev->timer_work, HZ);
+	queue_delayed_work(system_power_efficient_wq, &dev->timer_work, HZ);
 
 	return 0;
 }

@@ -1168,7 +1168,7 @@ static int ufx_ops_release(struct fb_info *info, int user)
 
 	/* We can't free fb_info here - fbmem will touch it when we return */
 	if (dev->virtualized && (dev->fb_count == 0))
-		schedule_delayed_work(&dev->free_framebuffer_work, HZ);
+		queue_delayed_work(system_power_efficient_wq, &dev->free_framebuffer_work, HZ);
 
 	if ((dev->fb_count == 0) && (info->fbdefio)) {
 		fb_deferred_io_cleanup(info);
@@ -1778,7 +1778,7 @@ static void ufx_usb_disconnect(struct usb_interface *interface)
 
 	/* if clients still have us open, will be freed on last close */
 	if (dev->fb_count == 0)
-		schedule_delayed_work(&dev->free_framebuffer_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &dev->free_framebuffer_work, 0);
 
 	/* release reference taken by kref_init in probe() */
 	kref_put(&dev->kref, ufx_free);
@@ -1822,7 +1822,7 @@ static void ufx_urb_completion(struct urb *urb)
 	/* When using fb_defio, we deadlock if up() is called
 	 * while another is waiting. So queue to another process */
 	if (fb_defio)
-		schedule_delayed_work(&unode->release_urb_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &unode->release_urb_work, 0);
 	else
 		up(&dev->urbs.limit_sem);
 }

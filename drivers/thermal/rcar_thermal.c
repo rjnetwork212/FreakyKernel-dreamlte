@@ -350,7 +350,7 @@ static irqreturn_t rcar_thermal_irq(int irq, void *data)
 	rcar_thermal_for_each_priv(priv, common) {
 		if (rcar_thermal_had_changed(priv, status)) {
 			rcar_thermal_irq_disable(priv);
-			queue_delayed_work(system_freezable_wq, &priv->work,
+			queue_delayed_work(system_power_efficient_wq, &priv->work,
 					   msecs_to_jiffies(300));
 		}
 	}

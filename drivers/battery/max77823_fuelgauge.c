@@ -1626,7 +1626,7 @@ static void full_comp_work_handler(struct work_struct *work)
 
 	if (avg_current >= 25) {
 		cancel_delayed_work(&fuelgauge->info.full_comp_work);
-		schedule_delayed_work(&fuelgauge->info.full_comp_work, 100);
+		queue_delayed_work(system_power_efficient_wq, &fuelgauge->info.full_comp_work, 100);
 	} else {
 		pr_info("%s: full charge compensation start (avg_current %d)\n",
 			__func__, avg_current);
@@ -1785,7 +1785,7 @@ bool max77823_fg_full_charged(struct max77823_fuelgauge_data *fuelgauge)
 		(int)(value.intval == POWER_SUPPLY_STATUS_FULL), true);
 
 	cancel_delayed_work(&fuelgauge->info.full_comp_work);
-	schedule_delayed_work(&fuelgauge->info.full_comp_work, 100);
+	queue_delayed_work(system_power_efficient_wq, &fuelgauge->info.full_comp_work, 100);
 
 	return false;
 }
@@ -2268,7 +2268,7 @@ static irqreturn_t max77823_fg_irq_thread(int irq, void *irq_data)
 		else
 			wake_unlock(&fuelgauge->fuel_alert_wake_lock);
 
-		schedule_delayed_work(&fuelgauge->isr_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &fuelgauge->isr_work, 0);
 
 		fuelgauge->is_fuel_alerted = fuel_alerted;
 	}

@@ -93,7 +93,7 @@ static int configure_channel(struct most_interface *most_iface,
 	}
 
 	if ((channel_config->direction == MOST_CH_RX) && (dev->polling_mode)) {
-		schedule_delayed_work(&dev->rx.dwork,
+		queue_delayed_work(system_power_efficient_wq, &dev->rx.dwork,
 				      msecs_to_jiffies(MSEC_PER_SEC / 4));
 	}
 	dev->is_open[ch_idx] = true;
@@ -265,7 +265,7 @@ static void pending_rx_work(struct work_struct *work)
 
 	if (dev->polling_mode) {
 		if (dev->is_open[CH_RX])
-			schedule_delayed_work(&dev->rx.dwork,
+			queue_delayed_work(system_power_efficient_wq, &dev->rx.dwork,
 					      msecs_to_jiffies(MSEC_PER_SEC
 							       / scan_rate));
 	} else {
@@ -297,7 +297,7 @@ static irqreturn_t most_irq_handler(int irq, void *_dev)
 
 	disable_irq_nosync(irq);
 
-	schedule_delayed_work(&dev->rx.dwork, 0);
+	queue_delayed_work(system_power_efficient_wq, &dev->rx.dwork, 0);
 
 	return IRQ_HANDLED;
 }

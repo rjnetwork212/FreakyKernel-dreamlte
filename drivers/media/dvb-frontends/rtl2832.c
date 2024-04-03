@@ -405,7 +405,7 @@ static int rtl2832_init(struct dvb_frontend *fe)
 	c->post_bit_count.len = 1;
 	c->post_bit_count.stat[0].scale = FE_SCALE_NOT_AVAILABLE;
 	/* start statistics polling */
-	schedule_delayed_work(&dev->stat_work, msecs_to_jiffies(2000));
+	queue_delayed_work(system_power_efficient_wq, &dev->stat_work, msecs_to_jiffies(2000));
 	dev->sleeping = false;
 
 	return 0;
@@ -836,7 +836,7 @@ static void rtl2832_stat_work(struct work_struct *work)
 	}
 
 err_schedule_delayed_work:
-	schedule_delayed_work(&dev->stat_work, msecs_to_jiffies(2000));
+	queue_delayed_work(system_power_efficient_wq, &dev->stat_work, msecs_to_jiffies(2000));
 	return;
 err:
 	dev_dbg(&client->dev, "failed=%d\n", ret);
@@ -894,7 +894,7 @@ static int rtl2832_deselect(struct i2c_adapter *adap, void *mux_priv,
 {
 	struct rtl2832_dev *dev = mux_priv;
 
-	schedule_delayed_work(&dev->i2c_gate_work, usecs_to_jiffies(100));
+	queue_delayed_work(system_power_efficient_wq, &dev->i2c_gate_work, usecs_to_jiffies(100));
 	return 0;
 }
 

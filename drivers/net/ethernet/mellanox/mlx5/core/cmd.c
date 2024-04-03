@@ -718,7 +718,7 @@ static void cmd_work_handler(struct work_struct *work)
 	cmd_mode = cmd->mode;
 
 	if (ent->callback)
-		schedule_delayed_work(&ent->cb_timeout_work, cb_timeout);
+		queue_delayed_work(system_power_efficient_wq, &ent->cb_timeout_work, cb_timeout);
 
 	/* ring doorbell after the descriptor is valid */
 	mlx5_core_dbg(dev, "writing 0x%x to command doorbell\n", 1 << ent->idx);

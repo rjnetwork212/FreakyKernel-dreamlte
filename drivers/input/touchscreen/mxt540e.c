@@ -371,7 +371,7 @@ static void mxt_reconfigration_normal(struct work_struct *work)
 		for (id = 0; id < MAX_FINGER_NUM; ++id) {
 			if (data->fingers[id].state == MXT540E_STATE_INACTIVE)
 				continue;
-			schedule_delayed_work(&data->config_dwork, HZ * 5);
+			queue_delayed_work(system_power_efficient_wq, &data->config_dwork, HZ * 5);
 			printk(KERN_DEBUG "[TSP] touch pressed!! %s didn't execute!!\n",
 				__func__);
 			enable_irq(data->client->irq);
@@ -436,11 +436,11 @@ uint8_t calibrate_chip(struct mxt540e_data *data)
 		printk(KERN_DEBUG "[TSP] calibration success!!!\n");
 		if (check_resume_err == 2) {
 			check_resume_err = 1;
-			schedule_delayed_work(&data->resume_check_dwork,
+			queue_delayed_work(system_power_efficient_wq, &data->resume_check_dwork,
 					msecs_to_jiffies(2500));
 		} else if (check_resume_err == 1) {
 			cancel_delayed_work(&data->resume_check_dwork);
-			schedule_delayed_work(&data->resume_check_dwork,
+			queue_delayed_work(system_power_efficient_wq, &data->resume_check_dwork,
 					msecs_to_jiffies(2500));
 		}
 	}
@@ -796,7 +796,7 @@ static void resume_cal_err_func(struct mxt540e_data *data)
 	check_resume_err = 2;
 	calibrate_chip(data);
 	check_calibrate = 3;
-	schedule_delayed_work(&data->config_dwork, HZ * 5);
+	queue_delayed_work(system_power_efficient_wq, &data->config_dwork, HZ * 5);
 	config_dwork_flag = 3;
 }
 
@@ -1024,7 +1024,7 @@ static void calibration_check_func(struct mxt540e_data *data)
 		check_calibrate = 0;
 	else if (check_calibrate == 1) {
 		cancel_delayed_work(&data->cal_check_dwork);
-		schedule_delayed_work(&data->cal_check_dwork,
+		queue_delayed_work(system_power_efficient_wq, &data->cal_check_dwork,
 			msecs_to_jiffies(1400));
 	} else {
 		check_calibrate = 1;
@@ -1035,7 +1035,7 @@ static void calibration_check_func(struct mxt540e_data *data)
 		if (error < 0)
 			printk(KERN_ERR "[TSP] %s, %d Error!!\n",
 				__func__, __LINE__);
-		schedule_delayed_work(&data->cal_check_dwork,
+		queue_delayed_work(system_power_efficient_wq, &data->cal_check_dwork,
 				msecs_to_jiffies(1400));
 	}
 
@@ -1043,7 +1043,7 @@ static void calibration_check_func(struct mxt540e_data *data)
 		config_dwork_flag = 1;
 	else if (config_dwork_flag == 1) {
 		cancel_delayed_work(&data->config_dwork);
-		schedule_delayed_work(&data->config_dwork, HZ * 5);
+		queue_delayed_work(system_power_efficient_wq, &data->config_dwork, HZ * 5);
 	} else {
 		config_dwork_flag = 1;
 		get_object_info(data, GEN_ACQUISITIONCONFIG_T8,
@@ -1055,7 +1055,7 @@ static void calibration_check_func(struct mxt540e_data *data)
 		if (error < 0)
 			printk(KERN_ERR "[TSP] %s, %d Error!!\n",
 				__func__, __LINE__);
-		schedule_delayed_work(&data->config_dwork, HZ * 5);
+		queue_delayed_work(system_power_efficient_wq, &data->config_dwork, HZ * 5);
 	}
 
 }
@@ -1154,7 +1154,7 @@ static void report_input_data(struct mxt540e_data *data)
 		if (touch_is_pressed)
 			cancel_delayed_work(&data->cal_check_dwork);
 		else
-			schedule_delayed_work(&data->cal_check_dwork,
+			queue_delayed_work(system_power_efficient_wq, &data->cal_check_dwork,
 					msecs_to_jiffies(1400));
 	}
 }
@@ -1345,7 +1345,7 @@ static int mxt540e_internal_resume(struct mxt540e_data *data)
 		mxt540e_wakeup(data);
 #if 0
 	calibrate_chip(data);
-	schedule_delayed_work(&data->config_dwork, HZ * 5);
+	queue_delayed_work(system_power_efficient_wq, &data->config_dwork, HZ * 5);
 #endif
 	return 0;
 }
@@ -2697,7 +2697,7 @@ static int mxt540e_probe(struct i2c_client *client,
 	}
 	check_resume_err = 2;
 	calibrate_chip(data);
-	schedule_delayed_work(&data->config_dwork, HZ * 30);
+	queue_delayed_work(system_power_efficient_wq, &data->config_dwork, HZ * 30);
 
 	for (i = 0; i < data->num_fingers; i++)
 		data->fingers[i].state = MXT540E_STATE_INACTIVE;
@@ -2938,7 +2938,7 @@ static void mxt540e_late_resume(struct early_suspend *h)
 		check_resume_err = 2;
 		calibrate_chip(data);
 		check_calibrate = 3;
-		schedule_delayed_work(&data->config_dwork, HZ * 5);
+		queue_delayed_work(system_power_efficient_wq, &data->config_dwork, HZ * 5);
 		config_dwork_flag = 3;
 		enable_irq(data->client->irq);
 	} else {

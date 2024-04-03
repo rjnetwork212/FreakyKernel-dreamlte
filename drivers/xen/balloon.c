@@ -380,7 +380,7 @@ static void xen_online_page(struct page *page)
 static int xen_memory_notifier(struct notifier_block *nb, unsigned long val, void *v)
 {
 	if (val == MEM_ONLINE)
-		schedule_delayed_work(&balloon_worker, 0);
+		queue_delayed_work(system_power_efficient_wq, &balloon_worker, 0);
 
 	return NOTIFY_OK;
 }
@@ -604,7 +604,7 @@ static void balloon_process(struct work_struct *work)
 
 	/* Schedule more work if there is some still to be done. */
 	if (state == BP_EAGAIN)
-		schedule_delayed_work(&balloon_worker, balloon_stats.schedule_delay * HZ);
+		queue_delayed_work(system_power_efficient_wq, &balloon_worker, balloon_stats.schedule_delay * HZ);
 }
 
 /* Resets the Xen limit, sets new target, and kicks off processing. */
@@ -612,7 +612,7 @@ void balloon_set_new_target(unsigned long target)
 {
 	/* No need for lock. Not read-modify-write updates. */
 	balloon_stats.target_pages = target;
-	schedule_delayed_work(&balloon_worker, 0);
+	queue_delayed_work(system_power_efficient_wq, &balloon_worker, 0);
 }
 EXPORT_SYMBOL_GPL(balloon_set_new_target);
 
@@ -715,7 +715,7 @@ void free_xenballooned_pages(int nr_pages, struct page **pages)
 
 	/* The balloon may be too large now. Shrink it if needed. */
 	if (current_credit())
-		schedule_delayed_work(&balloon_worker, 0);
+		queue_delayed_work(system_power_efficient_wq, &balloon_worker, 0);
 
 	mutex_unlock(&balloon_mutex);
 }

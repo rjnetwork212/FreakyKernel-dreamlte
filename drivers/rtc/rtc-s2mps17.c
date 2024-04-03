@@ -537,7 +537,7 @@ static irqreturn_t s2m_smpl_warn_irq_handler(int irq, void *data)
 	}
 
 	disable_irq_nosync(smpl_irq);
-	queue_delayed_work(system_freezable_wq, &info->irq_work,
+	queue_delayed_work(system_power_efficient_wq, &info->irq_work,
 					msecs_to_jiffies(100));
 
 	dev_info(info->dev, "%s: SMPL_WARN HAPPENED!\n", __func__);
@@ -554,7 +554,7 @@ static void exynos_smpl_warn_work(struct work_struct *work)
 	state = (gpio_get_value(info->smpl_warn_info) & 0x1);
 
 	if (!state) {
-		queue_delayed_work(system_freezable_wq, &info->irq_work,
+		queue_delayed_work(system_power_efficient_wq, &info->irq_work,
 				msecs_to_jiffies(100));
 	} else {
 		dev_info(info->dev, "%s : SMPL_WARN polling End!\n", __func__);

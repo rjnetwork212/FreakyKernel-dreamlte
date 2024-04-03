@@ -553,7 +553,7 @@ static void fec_time_keep(struct work_struct *work)
 	}
 	mutex_unlock(&fep->ptp_clk_mutex);
 
-	schedule_delayed_work(&fep->time_keep, HZ);
+	queue_delayed_work(system_power_efficient_wq, &fep->time_keep, HZ);
 }
 
 /**
@@ -604,7 +604,7 @@ void fec_ptp_init(struct platform_device *pdev)
 		pr_err("ptp_clock_register failed\n");
 	}
 
-	schedule_delayed_work(&fep->time_keep, HZ);
+	queue_delayed_work(system_power_efficient_wq, &fep->time_keep, HZ);
 }
 
 void fec_ptp_stop(struct platform_device *pdev)

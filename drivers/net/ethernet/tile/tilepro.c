@@ -1361,7 +1361,7 @@ static void tile_net_open_retry(struct work_struct *w)
 	 * a working link.  ISSUE: What if the return value is negative?
 	 */
 	if (tile_net_open_inner(priv->dev) != 0)
-		schedule_delayed_work(&priv->retry_work,
+		queue_delayed_work(system_power_efficient_wq, &priv->retry_work,
 				      TILE_NET_RETRY_INTERVAL);
 	else
 		netif_carrier_on(priv->dev);
@@ -1455,7 +1455,7 @@ static int tile_net_open(struct net_device *dev)
 	 * and then remember to try again later.
 	 */
 	netif_carrier_off(dev);
-	schedule_delayed_work(&priv->retry_work, TILE_NET_RETRY_INTERVAL);
+	queue_delayed_work(system_power_efficient_wq, &priv->retry_work, TILE_NET_RETRY_INTERVAL);
 
 	return 0;
 }

@@ -84,7 +84,7 @@ static void update_writeback_rate(struct work_struct *work)
 
 	up_read(&dc->writeback_lock);
 
-	schedule_delayed_work(&dc->writeback_rate_update,
+	queue_delayed_work(system_power_efficient_wq, &dc->writeback_rate_update,
 			      dc->writeback_rate_update_seconds * HZ);
 }
 
@@ -552,7 +552,7 @@ int bch_cached_dev_writeback_start(struct cached_dev *dc)
 	if (IS_ERR(dc->writeback_thread))
 		return PTR_ERR(dc->writeback_thread);
 
-	schedule_delayed_work(&dc->writeback_rate_update,
+	queue_delayed_work(system_power_efficient_wq, &dc->writeback_rate_update,
 			      dc->writeback_rate_update_seconds * HZ);
 
 	bch_writeback_queue(dc);

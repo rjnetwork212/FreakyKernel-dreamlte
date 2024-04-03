@@ -227,7 +227,7 @@ static void cpts_overflow_check(struct work_struct *work)
 	cpts_write32(cpts, TS_PEND_EN, int_enable);
 	cpts_ptp_gettime(&cpts->info, &ts);
 	pr_debug("cpts overflow check at %lld.%09lu\n", ts.tv_sec, ts.tv_nsec);
-	schedule_delayed_work(&cpts->overflow_work, CPTS_OVERFLOW_PERIOD);
+	queue_delayed_work(system_power_efficient_wq, &cpts->overflow_work, CPTS_OVERFLOW_PERIOD);
 }
 
 static void cpts_clk_init(struct device *dev, struct cpts *cpts)
@@ -388,7 +388,7 @@ int cpts_register(struct device *dev, struct cpts *cpts,
 	spin_unlock_irqrestore(&cpts->lock, flags);
 
 	INIT_DELAYED_WORK(&cpts->overflow_work, cpts_overflow_check);
-	schedule_delayed_work(&cpts->overflow_work, CPTS_OVERFLOW_PERIOD);
+	queue_delayed_work(system_power_efficient_wq, &cpts->overflow_work, CPTS_OVERFLOW_PERIOD);
 
 	cpts->phc_index = ptp_clock_index(cpts->clock);
 #endif

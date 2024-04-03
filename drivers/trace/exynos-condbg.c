@@ -1953,7 +1953,7 @@ static int ecd_probe(struct platform_device *pdev)
 	ecd_sysfs_init(&pdev->dev);
 
 	INIT_DELAYED_WORK(&inf->check_load_firmware, ecd_delayed_work_check_firmware);
-	schedule_delayed_work(&inf->check_load_firmware,
+	queue_delayed_work(system_power_efficient_wq, &inf->check_load_firmware,
 			msecs_to_jiffies(20 * MSEC_PER_SEC));
 
 	ecd_printf(" > Exynos Console Debugger(ECD) is Loading, Wait\n"

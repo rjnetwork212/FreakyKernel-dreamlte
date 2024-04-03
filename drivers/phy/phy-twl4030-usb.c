@@ -463,7 +463,7 @@ static int twl4030_phy_power_on(struct phy *phy)
 	twl4030_usb_set_mode(twl, twl->usb_mode);
 	if (twl->usb_mode == T2_USB_MODE_ULPI)
 		twl4030_i2c_access(twl, 0);
-	schedule_delayed_work(&twl->id_workaround_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &twl->id_workaround_work, 0);
 
 	return 0;
 }
@@ -573,7 +573,7 @@ static irqreturn_t twl4030_usb_irq(int irq, void *_twl)
 	/* don't schedule during sleep - irq works right then */
 	if (status == OMAP_MUSB_ID_GROUND && pm_runtime_active(twl->dev)) {
 		cancel_delayed_work(&twl->id_workaround_work);
-		schedule_delayed_work(&twl->id_workaround_work, HZ);
+		queue_delayed_work(system_power_efficient_wq, &twl->id_workaround_work, HZ);
 	}
 
 	if (irq)
@@ -595,7 +595,7 @@ static int twl4030_phy_init(struct phy *phy)
 	struct twl4030_usb *twl = phy_get_drvdata(phy);
 
 	pm_runtime_get_sync(twl->dev);
-	schedule_delayed_work(&twl->id_workaround_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &twl->id_workaround_work, 0);
 	pm_runtime_mark_last_busy(twl->dev);
 	pm_runtime_put_autosuspend(twl->dev);
 

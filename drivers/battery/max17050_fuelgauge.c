@@ -2059,7 +2059,7 @@ static void full_comp_work_handler(struct work_struct *work)
 
 	if (avg_current >= 25) {
 		cancel_delayed_work(&fuelgauge->info.full_comp_work);
-		schedule_delayed_work(&fuelgauge->info.full_comp_work, 100);
+		queue_delayed_work(system_power_efficient_wq, &fuelgauge->info.full_comp_work, 100);
 	} else {
 		dev_info(&fuelgauge->client->dev,
 			"%s: full charge compensation start (avg_current %d)\n",
@@ -2237,7 +2237,7 @@ bool sec_hal_fg_full_charged(struct i2c_client *client)
 		(int)(value.intval == POWER_SUPPLY_STATUS_FULL), true);
 
 	cancel_delayed_work(&fuelgauge->info.full_comp_work);
-	schedule_delayed_work(&fuelgauge->info.full_comp_work, 100);
+	queue_delayed_work(system_power_efficient_wq, &fuelgauge->info.full_comp_work, 100);
 
 	return false;
 }

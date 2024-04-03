@@ -259,7 +259,7 @@ static void mlx5e_update_stats_work(struct work_struct *work)
 	mutex_lock(&priv->state_lock);
 	if (test_bit(MLX5E_STATE_OPENED, &priv->state)) {
 		mlx5e_update_stats(priv);
-		schedule_delayed_work(dwork,
+		queue_delayed_work(system_power_efficient_wq, dwork,
 				      msecs_to_jiffies(
 					      MLX5E_UPDATE_STATS_INTERVAL));
 	}
@@ -1424,7 +1424,7 @@ int mlx5e_open_locked(struct net_device *netdev)
 	mlx5e_update_carrier(priv);
 	mlx5e_redirect_rqts(priv);
 
-	schedule_delayed_work(&priv->update_stats_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &priv->update_stats_work, 0);
 
 	return 0;
 

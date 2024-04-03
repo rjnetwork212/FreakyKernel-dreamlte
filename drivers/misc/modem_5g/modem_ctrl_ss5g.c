@@ -603,7 +603,7 @@ static irqreturn_t handle_cp_boot_noti_irq(int irq, void *data)
 	if (!mc->boot_on && gpio_get_value(cp_boot_noti))
 		schedule_work(&mc->work);
 	else if (mc->boot_on && gpio_get_value(cp_boot_noti))
-		schedule_delayed_work(&mc->dwork, 0);
+		queue_delayed_work(system_power_efficient_wq, &mc->dwork, 0);
 
 	return IRQ_HANDLED;
 }

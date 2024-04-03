@@ -600,7 +600,7 @@ static void qlt_schedule_sess_for_deletion(struct qla_tgt_sess *sess,
 	if (immediate)
 		mod_delayed_work(system_wq, &tgt->sess_del_work, 0);
 	else
-		schedule_delayed_work(&tgt->sess_del_work,
+		queue_delayed_work(system_power_efficient_wq, &tgt->sess_del_work,
 		    sess->expires - jiffies);
 }
 
@@ -698,7 +698,7 @@ static void qlt_del_sess_work_fn(struct delayed_work *work)
 			ha->tgt.tgt_ops->shutdown_sess(sess);
 			ha->tgt.tgt_ops->put_sess(sess);
 		} else {
-			schedule_delayed_work(&tgt->sess_del_work,
+			queue_delayed_work(system_power_efficient_wq, &tgt->sess_del_work,
 			    sess->expires - elapsed);
 			break;
 		}

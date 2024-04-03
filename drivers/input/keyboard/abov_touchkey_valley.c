@@ -757,7 +757,7 @@ static void touchkey_efs_open_work(struct work_struct *work)
 
 out:
 	if (count < 50) {
-		schedule_delayed_work(&info->efs_open_work, msecs_to_jiffies(2000));
+		queue_delayed_work(system_power_efficient_wq, &info->efs_open_work, msecs_to_jiffies(2000));
 		count++;
  	} else {
 		input_err(true, &info->client->dev,
@@ -2910,7 +2910,7 @@ static int abov_tk_probe(struct i2c_client *client,
 		INIT_DELAYED_WORK(&info->led_twinkle_work, led_twinkle_work);
 		info->led_twinkle_check =  1;
 
-		schedule_delayed_work(&info->led_twinkle_work, msecs_to_jiffies(400));
+		queue_delayed_work(system_power_efficient_wq, &info->led_twinkle_work, msecs_to_jiffies(400));
 	}
 #endif
 	input_err(true, &client->dev, "%s done\n", __func__);
@@ -2936,7 +2936,7 @@ static int abov_tk_probe(struct i2c_client *client,
 	input_info(true, &client->dev, "%s: light version of kernel : %s\n",
 			__func__, info->light_version_full_bin);
 
-	schedule_delayed_work(&info->efs_open_work, msecs_to_jiffies(2000));
+	queue_delayed_work(system_power_efficient_wq, &info->efs_open_work, msecs_to_jiffies(2000));
 #endif
 
 	return 0;
@@ -2976,7 +2976,7 @@ static void led_twinkle_work(struct work_struct *work)
 		if(led_on)	led_on = 0;
 		else		led_on = 1;
 
-		schedule_delayed_work(&info->led_twinkle_work, msecs_to_jiffies(400));
+		queue_delayed_work(system_power_efficient_wq, &info->led_twinkle_work, msecs_to_jiffies(400));
 	}else{
 
 		if(led_on == 0)

@@ -530,7 +530,7 @@ static int should_disconnect(unsigned char cmd)
 static void NCR5380_set_timer(struct NCR5380_hostdata *hostdata, unsigned long timeout)
 {
 	hostdata->time_expires = jiffies + timeout;
-	schedule_delayed_work(&hostdata->coroutine, timeout);
+	queue_delayed_work(system_power_efficient_wq, &hostdata->coroutine, timeout);
 }
 
 
@@ -956,7 +956,7 @@ static int NCR5380_queue_command_lck(struct scsi_cmnd *cmd, void (*done) (struct
 
 	/* Run the coroutine if it isn't already running. */
 	/* Kick off command processing */
-	schedule_delayed_work(&hostdata->coroutine, 0);
+	queue_delayed_work(system_power_efficient_wq, &hostdata->coroutine, 0);
 	return 0;
 }
 
@@ -1165,7 +1165,7 @@ static irqreturn_t NCR5380_intr(int dummy, void *dev_id)
 		}	/* if BASR_IRQ */
 		spin_unlock_irqrestore(instance->host_lock, flags);
 		if(!done)
-			schedule_delayed_work(&hostdata->coroutine, 0);
+			queue_delayed_work(system_power_efficient_wq, &hostdata->coroutine, 0);
 	} while (!done);
 	return IRQ_HANDLED;
 }

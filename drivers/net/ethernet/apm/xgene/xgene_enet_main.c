@@ -704,7 +704,7 @@ static int xgene_enet_open(struct net_device *ndev)
 	if (pdata->phy_mode == PHY_INTERFACE_MODE_RGMII)
 		phy_start(pdata->phy_dev);
 	else
-		schedule_delayed_work(&pdata->link_work, PHY_POLL_LINK_OFF);
+		queue_delayed_work(system_power_efficient_wq, &pdata->link_work, PHY_POLL_LINK_OFF);
 
 	netif_start_queue(ndev);
 

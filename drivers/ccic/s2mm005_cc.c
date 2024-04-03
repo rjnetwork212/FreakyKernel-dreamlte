@@ -320,7 +320,7 @@ static int ccic_set_dual_role(struct dual_role_phy_instance *dual_role,
 		ret = -EIO;
 	} else {
 		pr_err("%s: reverse success, one more check\n", __func__);
-		schedule_delayed_work(&usbpd_data->role_swap_work, msecs_to_jiffies(DUAL_ROLE_SET_MODE_WAIT_MS));
+		queue_delayed_work(system_power_efficient_wq, &usbpd_data->role_swap_work, msecs_to_jiffies(DUAL_ROLE_SET_MODE_WAIT_MS));
 	}
 
 	dev_info(&i2c->dev, "%s -> data role : %d\n", __func__, *val);
@@ -488,7 +488,7 @@ int s2mm005_port_type_set(const struct typec_capability *cap, enum typec_port_ty
 			return -EIO;
 		} else {
 			pr_err("%s: reverse success, one more check\n", __func__);
-			schedule_delayed_work(&usbpd_data->typec_role_swap_work, msecs_to_jiffies(DUAL_ROLE_SET_MODE_WAIT_MS));
+			queue_delayed_work(system_power_efficient_wq, &usbpd_data->typec_role_swap_work, msecs_to_jiffies(DUAL_ROLE_SET_MODE_WAIT_MS));
 		}
 	}
 
@@ -879,9 +879,9 @@ void process_cc_attach(void * data,u8 *plug_attach_done)
 		if ( usbpd_data->acc_type != CCIC_DOCK_DETACHED ) {
 			pr_info("%s: schedule_delayed_work - pd_state : %d\n", __func__, usbpd_data->pd_state);
 			if (usbpd_data->acc_type == CCIC_DOCK_HMT ) {
-				schedule_delayed_work(&usbpd_data->acc_detach_work, msecs_to_jiffies(GEAR_VR_DETACH_WAIT_MS));
+				queue_delayed_work(system_power_efficient_wq, &usbpd_data->acc_detach_work, msecs_to_jiffies(GEAR_VR_DETACH_WAIT_MS));
 			} else {
-				schedule_delayed_work(&usbpd_data->acc_detach_work, msecs_to_jiffies(0));
+				queue_delayed_work(system_power_efficient_wq, &usbpd_data->acc_detach_work, msecs_to_jiffies(0));
 			}
 		}
 #endif

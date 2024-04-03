@@ -899,7 +899,7 @@ static int dsicm_update(struct omap_dss_device *dssdev,
 		goto err;
 
 	if (ddata->te_enabled && gpio_is_valid(ddata->ext_te_gpio)) {
-		schedule_delayed_work(&ddata->te_timeout_work,
+		queue_delayed_work(system_power_efficient_wq, &ddata->te_timeout_work,
 				msecs_to_jiffies(250));
 		atomic_set(&ddata->do_update, 1);
 	} else {

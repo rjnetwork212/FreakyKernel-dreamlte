@@ -491,7 +491,7 @@ static int max86900_hrm_enable(struct max86900_device_data *data)
 	mutex_unlock(&data->activelock);
 
 	if (data->reenable_cnt < MAX86902_REENABLE_MAX_CNT) {
-		schedule_delayed_work(&data->reenable_work_queue,
+		queue_delayed_work(system_power_efficient_wq, &data->reenable_work_queue,
 			msecs_to_jiffies(MAX86902_RE_ENABLE));
 		data->reenable_set = MAX86902_REENABLE_HRM;
 	} else {
@@ -677,7 +677,7 @@ static int max86902_hrm_enable(struct max86900_device_data *data)
 	mutex_unlock(&data->activelock);
 
 	if (data->reenable_cnt < MAX86902_REENABLE_MAX_CNT) {
-		schedule_delayed_work(&data->reenable_work_queue,
+		queue_delayed_work(system_power_efficient_wq, &data->reenable_work_queue,
 			msecs_to_jiffies(MAX86902_RE_ENABLE));
 		data->reenable_set = MAX86902_REENABLE_HRM;
 	} else {
@@ -1024,7 +1024,7 @@ static int max86902_uv_enable(struct max86900_device_data *data)
 	mutex_unlock(&data->activelock);
 
 	if (data->reenable_cnt < MAX86902_REENABLE_MAX_CNT) {
-		schedule_delayed_work(&data->reenable_work_queue,
+		queue_delayed_work(system_power_efficient_wq, &data->reenable_work_queue,
 			msecs_to_jiffies(MAX86902_RE_ENABLE));
 		data->reenable_set = MAX86902_REENABLE_UV;
 	} else {
@@ -4905,7 +4905,7 @@ static void uv_sr_set(struct work_struct *w)
 	data = container_of(work_queue,
 		struct max86900_device_data, uv_sr_work_queue);
 
-	schedule_delayed_work(work_queue,
+	queue_delayed_work(system_power_efficient_wq, work_queue,
 		msecs_to_jiffies(data->uv_sr_interval / 2));
 	/*Ready to Enable UV ADC convert*/
 	err = max86900_write_reg(data, MAX86900_TEST_ENABLE_PLETH, 0x00);

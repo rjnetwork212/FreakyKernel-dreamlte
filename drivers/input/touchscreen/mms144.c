@@ -652,7 +652,7 @@ static void set_dvfs_lock(struct mms_ts_info *info, uint32_t on)
 	mutex_lock(&info->dvfs_lock);
 	if (on == 0) {
 		if (info->dvfs_lock_status) {
-			schedule_delayed_work(&info->work_dvfs_off,
+			queue_delayed_work(system_power_efficient_wq, &info->work_dvfs_off,
 				msecs_to_jiffies(TOUCH_BOOSTER_OFF_TIME));
 		}
 	} else if (on == 1) {

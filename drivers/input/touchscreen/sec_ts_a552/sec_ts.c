@@ -527,7 +527,7 @@ int sec_ts_i2c_write(struct sec_ts_data *ts, u8 reg, u8 *data, int len)
 		input_err(true, &ts->client->dev, "%s: I2C write over retry limit\n", __func__);
 		ret = -EIO;
 #ifdef USE_POR_AFTER_I2C_RETRY
-		schedule_delayed_work(&ts->reset_work, msecs_to_jiffies(TOUCH_RESET_DWORK_TIME));
+		queue_delayed_work(system_power_efficient_wq, &ts->reset_work, msecs_to_jiffies(TOUCH_RESET_DWORK_TIME));
 #endif
 	}
 
@@ -643,7 +643,7 @@ int sec_ts_i2c_read(struct sec_ts_data *ts, u8 reg, u8 *data, int len)
 		input_err(true, &ts->client->dev, "%s: I2C read over retry limit\n", __func__);
 		ret = -EIO;
 #ifdef USE_POR_AFTER_I2C_RETRY
-		schedule_delayed_work(&ts->reset_work, msecs_to_jiffies(TOUCH_RESET_DWORK_TIME));
+		queue_delayed_work(system_power_efficient_wq, &ts->reset_work, msecs_to_jiffies(TOUCH_RESET_DWORK_TIME));
 #endif
 
 	}
@@ -783,7 +783,7 @@ static void dump_tsp_log(void)
 		printk(KERN_ERR "%s sec_ts %s, ignored ## tsp probe fail!!\n", SECLOG, __func__);
 		return;
 	}
-	schedule_delayed_work(p_ghost_check, msecs_to_jiffies(100));
+	queue_delayed_work(system_power_efficient_wq, p_ghost_check, msecs_to_jiffies(100));
 }
 #endif
 
@@ -2341,7 +2341,7 @@ static int sec_ts_probe(struct i2c_client *client, const struct i2c_device_id *i
 
 	device_init_wakeup(&client->dev, true);
 
-	schedule_delayed_work(&ts->work_read_nv, msecs_to_jiffies(100));
+	queue_delayed_work(system_power_efficient_wq, &ts->work_read_nv, msecs_to_jiffies(100));
 
 #ifdef SEC_TS_SUPPORT_SPONGELIB
 	sec_ts_check_custom_library(ts);
@@ -2603,7 +2603,7 @@ static int sec_ts_input_open(struct input_dev *dev)
 
 	if (ts->lowpower_status) {
 #ifdef USE_RESET_EXIT_LPM
-		schedule_delayed_work(&ts->reset_work, msecs_to_jiffies(TOUCH_RESET_DWORK_TIME));
+		queue_delayed_work(system_power_efficient_wq, &ts->reset_work, msecs_to_jiffies(TOUCH_RESET_DWORK_TIME));
 #else
 		sec_ts_set_lowpowermode(ts, TO_TOUCH_MODE);
 #endif

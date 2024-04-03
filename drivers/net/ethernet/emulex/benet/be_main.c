@@ -4256,13 +4256,13 @@ static int be_mac_setup(struct be_adapter *adapter)
 
 static void be_schedule_worker(struct be_adapter *adapter)
 {
-	schedule_delayed_work(&adapter->work, msecs_to_jiffies(1000));
+	queue_delayed_work(system_power_efficient_wq, &adapter->work, msecs_to_jiffies(1000));
 	adapter->flags |= BE_FLAGS_WORKER_SCHEDULED;
 }
 
 static void be_schedule_err_detection(struct be_adapter *adapter)
 {
-	schedule_delayed_work(&adapter->be_err_detection_work,
+	queue_delayed_work(system_power_efficient_wq, &adapter->be_err_detection_work,
 			      msecs_to_jiffies(1000));
 	adapter->flags |= BE_FLAGS_ERR_DETECTION_SCHEDULED;
 }
@@ -5517,7 +5517,7 @@ static void be_worker(struct work_struct *work)
 
 reschedule:
 	adapter->work_counter++;
-	schedule_delayed_work(&adapter->work, msecs_to_jiffies(1000));
+	queue_delayed_work(system_power_efficient_wq, &adapter->work, msecs_to_jiffies(1000));
 }
 
 static void be_unmap_pci_bars(struct be_adapter *adapter)

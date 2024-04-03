@@ -566,7 +566,7 @@ static void af9013_statistics_work(struct work_struct *work)
 		break;
 	}
 
-	schedule_delayed_work(&state->statistics_work,
+	queue_delayed_work(system_power_efficient_wq, &state->statistics_work,
 		msecs_to_jiffies(next_msec));
 }
 
@@ -1281,7 +1281,7 @@ static int af9013_init(struct dvb_frontend *fe)
 		goto err;
 
 	state->first_tune = true;
-	schedule_delayed_work(&state->statistics_work, msecs_to_jiffies(400));
+	queue_delayed_work(system_power_efficient_wq, &state->statistics_work, msecs_to_jiffies(400));
 
 	return ret;
 err:

@@ -2514,7 +2514,7 @@ static void qede_set_rx_mode(struct net_device *ndev)
 			"qede_set_rx_mode called while interface is down\n");
 	} else {
 		set_bit(QEDE_SP_RX_MODE, &edev->sp_flags);
-		schedule_delayed_work(&edev->sp_task, 0);
+		queue_delayed_work(system_power_efficient_wq, &edev->sp_task, 0);
 	}
 }
 

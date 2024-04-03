@@ -598,7 +598,7 @@ static void fc_rport_error_retry(struct fc_rport_priv *rdata,
 		/* no additional delay on exchange timeouts */
 		if (PTR_ERR(fp) == -FC_EX_TIMEOUT)
 			delay = 0;
-		schedule_delayed_work(&rdata->retry_work, delay);
+		queue_delayed_work(system_power_efficient_wq, &rdata->retry_work, delay);
 		return;
 	}
 

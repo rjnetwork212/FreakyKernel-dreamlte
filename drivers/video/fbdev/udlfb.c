@@ -985,7 +985,7 @@ static int dlfb_ops_release(struct fb_info *info, int user)
 
 	/* We can't free fb_info here - fbmem will touch it when we return */
 	if (dev->virtualized && (dev->fb_count == 0))
-		schedule_delayed_work(&dev->free_framebuffer_work, HZ);
+		queue_delayed_work(system_power_efficient_wq, &dev->free_framebuffer_work, HZ);
 
 	if ((dev->fb_count == 0) && (info->fbdefio)) {
 		fb_deferred_io_cleanup(info);
@@ -1647,7 +1647,7 @@ static int dlfb_usb_probe(struct usb_interface *interface,
 	/* Workitem keep things fast & simple during USB enumeration */
 	INIT_DELAYED_WORK(&dev->init_framebuffer_work,
 			  dlfb_init_framebuffer_work);
-	schedule_delayed_work(&dev->init_framebuffer_work, 0);
+	queue_delayed_work(system_power_efficient_wq, &dev->init_framebuffer_work, 0);
 
 	return 0;
 
@@ -1771,7 +1771,7 @@ static void dlfb_usb_disconnect(struct usb_interface *interface)
 
 	/* if clients still have us open, will be freed on last close */
 	if (dev->fb_count == 0)
-		schedule_delayed_work(&dev->free_framebuffer_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &dev->free_framebuffer_work, 0);
 
 	/* release reference taken by kref_init in probe() */
 	kref_put(&dev->kref, dlfb_free);
@@ -1819,7 +1819,7 @@ static void dlfb_urb_completion(struct urb *urb)
 	 * while another is waiting. So queue to another process.
 	 */
 	if (fb_defio)
-		schedule_delayed_work(&unode->release_urb_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &unode->release_urb_work, 0);
 	else
 		up(&dev->urbs.limit_sem);
 }

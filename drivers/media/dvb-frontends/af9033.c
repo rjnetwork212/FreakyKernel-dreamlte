@@ -469,7 +469,7 @@ static int af9033_init(struct dvb_frontend *fe)
 	c->post_bit_error.len = 1;
 	c->post_bit_error.stat[0].scale = FE_SCALE_NOT_AVAILABLE;
 	/* start statistics polling */
-	schedule_delayed_work(&dev->stat_work, msecs_to_jiffies(2000));
+	queue_delayed_work(system_power_efficient_wq, &dev->stat_work, msecs_to_jiffies(2000));
 
 	return 0;
 
@@ -1206,7 +1206,7 @@ static void af9033_stat_work(struct work_struct *work)
 	}
 
 err_schedule_delayed_work:
-	schedule_delayed_work(&dev->stat_work, msecs_to_jiffies(2000));
+	queue_delayed_work(system_power_efficient_wq, &dev->stat_work, msecs_to_jiffies(2000));
 	return;
 err:
 	dev_dbg(&dev->client->dev, "failed=%d\n", ret);

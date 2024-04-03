@@ -1240,7 +1240,7 @@ static void atom_link_hb(struct work_struct *work)
 	 * unless the cached link status says the link is down.
 	 */
 	if (time_after(poll_ts, jiffies) && atom_link_is_up(ndev)) {
-		schedule_delayed_work(&ndev->hb_timer, poll_ts - jiffies);
+		queue_delayed_work(system_power_efficient_wq, &ndev->hb_timer, poll_ts - jiffies);
 		return;
 	}
 
@@ -1248,7 +1248,7 @@ static void atom_link_hb(struct work_struct *work)
 		ntb_link_event(&ndev->ntb);
 
 	if (atom_link_is_up(ndev) || !atom_link_is_err(ndev)) {
-		schedule_delayed_work(&ndev->hb_timer, ATOM_LINK_HB_TIMEOUT);
+		queue_delayed_work(system_power_efficient_wq, &ndev->hb_timer, ATOM_LINK_HB_TIMEOUT);
 		return;
 	}
 
@@ -1299,7 +1299,7 @@ static void atom_link_hb(struct work_struct *work)
 	 * the driver will be stuck in this loop forever.  Add a random interval
 	 * to the recovery time to prevent this race.
 	 */
-	schedule_delayed_work(&ndev->hb_timer, ATOM_LINK_RECOVERY_TIME
+	queue_delayed_work(system_power_efficient_wq, &ndev->hb_timer, ATOM_LINK_RECOVERY_TIME
 			      + prandom_u32() % ATOM_LINK_RECOVERY_TIME);
 }
 
@@ -1315,7 +1315,7 @@ static int atom_init_isr(struct intel_ntb_dev *ndev)
 	/* ATOM doesn't have link status interrupt, poll on that platform */
 	ndev->last_ts = jiffies;
 	INIT_DELAYED_WORK(&ndev->hb_timer, atom_link_hb);
-	schedule_delayed_work(&ndev->hb_timer, ATOM_LINK_HB_TIMEOUT);
+	queue_delayed_work(system_power_efficient_wq, &ndev->hb_timer, ATOM_LINK_HB_TIMEOUT);
 
 	return 0;
 }

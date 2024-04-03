@@ -537,7 +537,7 @@ static void check_console(struct work_struct *work)
 
 	delay = OCTEON_CONSOLE_POLL_INTERVAL_MS;
 
-	schedule_delayed_work(&wk->work, msecs_to_jiffies(delay));
+	queue_delayed_work(system_power_efficient_wq, &wk->work, msecs_to_jiffies(delay));
 }
 
 int octeon_init_consoles(struct octeon_device *oct)
@@ -613,7 +613,7 @@ int octeon_add_console(struct octeon_device *oct, u32 console_num)
 		oct->console_poll_work[console_num].ctxptr = (void *)oct;
 		oct->console_poll_work[console_num].ctxul = console_num;
 		delay = OCTEON_CONSOLE_POLL_INTERVAL_MS;
-		schedule_delayed_work(work, msecs_to_jiffies(delay));
+		queue_delayed_work(system_power_efficient_wq, work, msecs_to_jiffies(delay));
 
 		if (octeon_console_debug_enabled(console_num)) {
 			ret = octeon_console_send_cmd(oct,

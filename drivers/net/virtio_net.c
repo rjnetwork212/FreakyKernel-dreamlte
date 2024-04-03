@@ -740,7 +740,7 @@ static void refill_work(struct work_struct *work)
 		 * we will *never* try to fill again.
 		 */
 		if (still_empty)
-			schedule_delayed_work(&vi->refill, HZ/2);
+			queue_delayed_work(system_power_efficient_wq, &vi->refill, HZ/2);
 	}
 }
 
@@ -758,7 +758,7 @@ static int virtnet_receive(struct receive_queue *rq, int budget)
 
 	if (rq->vq->num_free > virtqueue_get_vring_size(rq->vq) / 2) {
 		if (!try_fill_recv(vi, rq, GFP_ATOMIC))
-			schedule_delayed_work(&vi->refill, 0);
+			queue_delayed_work(system_power_efficient_wq, &vi->refill, 0);
 	}
 
 	return received;
@@ -832,7 +832,7 @@ static int virtnet_open(struct net_device *dev)
 		if (i < vi->curr_queue_pairs)
 			/* Make sure we have some buffers: if oom use wq. */
 			if (!try_fill_recv(vi, &vi->rq[i], GFP_KERNEL))
-				schedule_delayed_work(&vi->refill, 0);
+				queue_delayed_work(system_power_efficient_wq, &vi->refill, 0);
 		virtnet_napi_enable(&vi->rq[i]);
 	}
 
@@ -1150,7 +1150,7 @@ static int virtnet_set_queues(struct virtnet_info *vi, u16 queue_pairs)
 		vi->curr_queue_pairs = queue_pairs;
 		/* virtnet_open() will refill when device is going to up. */
 		if (dev->flags & IFF_UP)
-			schedule_delayed_work(&vi->refill, 0);
+			queue_delayed_work(system_power_efficient_wq, &vi->refill, 0);
 	}
 
 	return 0;
@@ -2012,7 +2012,7 @@ static int virtnet_restore(struct virtio_device *vdev)
 	if (netif_running(vi->dev)) {
 		for (i = 0; i < vi->curr_queue_pairs; i++)
 			if (!try_fill_recv(vi, &vi->rq[i], GFP_KERNEL))
-				schedule_delayed_work(&vi->refill, 0);
+				queue_delayed_work(system_power_efficient_wq, &vi->refill, 0);
 
 		for (i = 0; i < vi->max_queue_pairs; i++)
 			virtnet_napi_enable(&vi->rq[i]);

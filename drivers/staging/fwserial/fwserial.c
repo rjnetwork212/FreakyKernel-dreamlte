@@ -284,7 +284,7 @@ static void __fwtty_restart_tx(struct fwtty_port *port)
 
 	len = dma_fifo_out_level(&port->tx_fifo);
 	if (len)
-		schedule_delayed_work(&port->drain, 0);
+		queue_delayed_work(system_power_efficient_wq, &port->drain, 0);
 	avail = dma_fifo_avail(&port->tx_fifo);
 
 	fwtty_dbg(port, "fifo len: %d avail: %d\n", len, avail);
@@ -376,7 +376,7 @@ static void fwtty_update_port_status(struct fwtty_port *port, unsigned status)
 	if (delta & (UART_LSR_BI << 24)) {
 		if (status & (UART_LSR_BI << 24)) {
 			port->break_last = jiffies;
-			schedule_delayed_work(&port->emit_breaks, 0);
+			queue_delayed_work(system_power_efficient_wq, &port->emit_breaks, 0);
 		} else {
 			/* run emit_breaks one last time (if pending) */
 			mod_delayed_work(system_wq, &port->emit_breaks, 0);
@@ -533,7 +533,7 @@ static void fwtty_emit_breaks(struct work_struct *work)
 	tty_flip_buffer_push(&port->port);
 
 	if (port->mstatus & (UART_LSR_BI << 24))
-		schedule_delayed_work(&port->emit_breaks, FREQ_BREAKS);
+		queue_delayed_work(system_power_efficient_wq, &port->emit_breaks, FREQ_BREAKS);
 	port->icount.brk += brk;
 }
 
@@ -784,7 +784,7 @@ static int fwtty_tx(struct fwtty_port *port, bool drain)
 		if (len) {
 			unsigned long delay = (n == -ENOMEM) ? HZ : 1;
 
-			schedule_delayed_work(&port->drain, delay);
+			queue_delayed_work(system_power_efficient_wq, &port->drain, delay);
 		}
 		len = dma_fifo_level(&port->tx_fifo);
 		spin_unlock_bh(&port->lock);
@@ -1116,7 +1116,7 @@ static int fwtty_write(struct tty_struct *tty, const unsigned char *buf, int c)
 	n = dma_fifo_in(&port->tx_fifo, buf, c);
 	len = dma_fifo_out_level(&port->tx_fifo);
 	if (len < DRAIN_THRESHOLD)
-		schedule_delayed_work(&port->drain, 1);
+		queue_delayed_work(system_power_efficient_wq, &port->drain, 1);
 	spin_unlock_bh(&port->lock);
 
 	if (len >= DRAIN_THRESHOLD)
@@ -2031,7 +2031,7 @@ static void fwserial_auto_connect(struct work_struct *work)
 
 	err = fwserial_connect_peer(peer);
 	if (err == -EAGAIN && ++peer->connect_retries < MAX_CONNECT_RETRIES)
-		schedule_delayed_work(&peer->connect, CONNECT_RETRY_DELAY);
+		queue_delayed_work(system_power_efficient_wq, &peer->connect, CONNECT_RETRY_DELAY);
 }
 
 static void fwserial_peer_workfn(struct work_struct *work)
@@ -2137,7 +2137,7 @@ static int fwserial_add_peer(struct fw_serial *serial, struct fw_unit *unit)
 
 	} else if (auto_connect) {
 		/* auto-attach to remote units only (if policy allows) */
-		schedule_delayed_work(&peer->connect, 1);
+		queue_delayed_work(system_power_efficient_wq, &peer->connect, 1);
 	}
 
 	return 0;

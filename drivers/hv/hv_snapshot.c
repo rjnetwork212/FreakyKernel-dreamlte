@@ -288,7 +288,7 @@ void hv_vss_onchannelcallback(void *context)
 				}
 				vss_transaction.state = HVUTIL_HOSTMSG_RECEIVED;
 				schedule_work(&vss_send_op_work);
-				schedule_delayed_work(&vss_timeout_work,
+				queue_delayed_work(system_power_efficient_wq, &vss_timeout_work,
 						      VSS_USERSPACE_TIMEOUT);
 				return;
 

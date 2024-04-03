@@ -529,7 +529,7 @@ static int ssp_probe(struct spi_device *spi)
 
 	if (data->fw_dl_state == FW_DL_STATE_NEED_TO_SCHEDULE) {
 		pr_info("[SSP] Firmware update is scheduled\n");
-		schedule_delayed_work(&data->work_firmware,
+		queue_delayed_work(system_power_efficient_wq, &data->work_firmware,
 				msecs_to_jiffies(1000));
 		data->fw_dl_state = FW_DL_STATE_SCHEDULED;
 	} else if (data->fw_dl_state == FW_DL_STATE_FAIL) {

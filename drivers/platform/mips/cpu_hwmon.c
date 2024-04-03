@@ -142,7 +142,7 @@ static void do_thermal_timer(struct work_struct *work)
 {
 	int value = loongson3_cpu_temp(0);
 	if (value <= CPU_THERMAL_THRESHOLD)
-		schedule_delayed_work(&thermal_work, msecs_to_jiffies(5000));
+		queue_delayed_work(system_power_efficient_wq, &thermal_work, msecs_to_jiffies(5000));
 	else
 		orderly_poweroff(true);
 }
@@ -174,7 +174,7 @@ static int __init loongson_hwmon_init(void)
 	}
 
 	INIT_DEFERRABLE_WORK(&thermal_work, do_thermal_timer);
-	schedule_delayed_work(&thermal_work, msecs_to_jiffies(20000));
+	queue_delayed_work(system_power_efficient_wq, &thermal_work, msecs_to_jiffies(20000));
 
 	return ret;
 

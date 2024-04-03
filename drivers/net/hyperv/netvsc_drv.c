@@ -614,10 +614,10 @@ void netvsc_linkstatus_callback(struct hv_device *device_obj,
 
 	ndev_ctx = netdev_priv(net);
 	if (!rdev->link_state) {
-		schedule_delayed_work(&ndev_ctx->dwork, 0);
-		schedule_delayed_work(&ndev_ctx->dwork, msecs_to_jiffies(20));
+		queue_delayed_work(system_power_efficient_wq, &ndev_ctx->dwork, 0);
+		queue_delayed_work(system_power_efficient_wq, &ndev_ctx->dwork, msecs_to_jiffies(20));
 	} else {
-		schedule_delayed_work(&ndev_ctx->dwork, 0);
+		queue_delayed_work(system_power_efficient_wq, &ndev_ctx->dwork, 0);
 	}
 }
 
@@ -1088,7 +1088,7 @@ static int netvsc_probe(struct hv_device *dev,
 		rndis_filter_device_remove(dev);
 		netvsc_free_netdev(net);
 	} else {
-		schedule_delayed_work(&net_device_ctx->dwork, 0);
+		queue_delayed_work(system_power_efficient_wq, &net_device_ctx->dwork, 0);
 	}
 
 	return ret;

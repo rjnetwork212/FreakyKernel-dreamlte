@@ -136,7 +136,7 @@ static int rtl2830_init(struct dvb_frontend *fe)
 	c->post_bit_count.len = 1;
 	c->post_bit_count.stat[0].scale = FE_SCALE_NOT_AVAILABLE;
 	/* start statistics polling */
-	schedule_delayed_work(&dev->stat_work, msecs_to_jiffies(2000));
+	queue_delayed_work(system_power_efficient_wq, &dev->stat_work, msecs_to_jiffies(2000));
 
 	dev->sleeping = false;
 
@@ -600,7 +600,7 @@ static void rtl2830_stat_work(struct work_struct *work)
 	}
 
 err_schedule_delayed_work:
-	schedule_delayed_work(&dev->stat_work, msecs_to_jiffies(2000));
+	queue_delayed_work(system_power_efficient_wq, &dev->stat_work, msecs_to_jiffies(2000));
 	return;
 err:
 	dev_dbg(&client->dev, "failed=%d\n", ret);

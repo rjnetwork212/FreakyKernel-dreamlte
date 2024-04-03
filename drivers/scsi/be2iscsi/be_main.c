@@ -5456,7 +5456,7 @@ beiscsi_hw_health_check(struct work_struct *work)
 
 	beiscsi_ue_detect(phba);
 
-	schedule_delayed_work(&phba->beiscsi_hw_check_task,
+	queue_delayed_work(system_power_efficient_wq, &phba->beiscsi_hw_check_task,
 			      msecs_to_jiffies(1000));
 }
 
@@ -5785,7 +5785,7 @@ static int beiscsi_dev_probe(struct pci_dev *pcidev,
 			    "iSCSI boot info.\n");
 
 	beiscsi_create_def_ifaces(phba);
-	schedule_delayed_work(&phba->beiscsi_hw_check_task,
+	queue_delayed_work(system_power_efficient_wq, &phba->beiscsi_hw_check_task,
 			      msecs_to_jiffies(1000));
 
 	beiscsi_log(phba, KERN_INFO, BEISCSI_LOG_INIT,
