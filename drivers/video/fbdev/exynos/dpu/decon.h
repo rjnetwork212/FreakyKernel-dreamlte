@@ -400,7 +400,7 @@ enum decon_data_path {
 	DECON1_DSCENC1_FF0_FORMATTER0_WBPOST	= 0x014,
 	/* WB_PRE */
 	DECON1_WBPRE_ONLY				= 0x100,
-	
+
 	/* No comp - FF0 - FORMATTER0  - WB_POST */
 	DECON2_NOCOMP_FF0_FORMATTER0_WBPOST		= 0x004,
 	/* No comp - FF0 - FORMATTER0  - DISPIF */
@@ -949,7 +949,7 @@ void decon_destroy_debugfs(struct decon_device *decon);
 #define DPU_EVENT_LOG_CMD(...) do { } while(0)
 #define DPU_EVENT_SHOW(...) do { } while(0)
 #define decon_create_debugfs(...) do { } while(0)
-#define decon_destroy_debugfs(..) do { } while(0)
+#define decon_destroy_debugfs(...) do { } while(0)
 #endif
 
 struct decon_resources {
