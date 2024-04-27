@@ -336,7 +336,7 @@ static void o2hb_arm_write_timeout(struct o2hb_region *reg)
 	}
 	cancel_delayed_work(&reg->hr_write_timeout_work);
 	reg->hr_last_timeout_start = jiffies;
-	schedule_delayed_work(&reg->hr_write_timeout_work,
+	queue_delayed_work(system_power_efficient_wq, &reg->hr_write_timeout_work,
 			      msecs_to_jiffies(O2HB_MAX_WRITE_TIMEOUT_MS));
 }
 

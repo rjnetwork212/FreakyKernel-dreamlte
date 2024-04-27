@@ -399,7 +399,7 @@ int ocfs2_global_read_info(struct super_block *sb, int type)
 						OCFS2_QBLK_RESERVED_SPACE;
 	oinfo->dqi_gi.dqi_qtree_depth = qtree_depth(&oinfo->dqi_gi);
 	INIT_DELAYED_WORK(&oinfo->dqi_sync_work, qsync_work_fn);
-	schedule_delayed_work(&oinfo->dqi_sync_work,
+	queue_delayed_work(system_power_efficient_wq, &oinfo->dqi_sync_work,
 			      msecs_to_jiffies(oinfo->dqi_syncms));
 
 out_err:
@@ -635,7 +635,7 @@ static void qsync_work_fn(struct work_struct *work)
 	struct super_block *sb = oinfo->dqi_gqinode->i_sb;
 
 	dquot_scan_active(sb, ocfs2_sync_dquot_helper, oinfo->dqi_type);
-	schedule_delayed_work(&oinfo->dqi_sync_work,
+	queue_delayed_work(system_power_efficient_wq, &oinfo->dqi_sync_work,
 			      msecs_to_jiffies(oinfo->dqi_syncms));
 }
 

@@ -850,7 +850,7 @@ static void intel_cqm_rmid_rotate(struct work_struct *work)
 	__intel_cqm_rmid_rotate();
 
 	delay = msecs_to_jiffies(intel_cqm_pmu.hrtimer_interval_ms);
-	schedule_delayed_work(&intel_cqm_rmid_work, delay);
+	queue_delayed_work(system_power_efficient_wq, &intel_cqm_rmid_work, delay);
 }
 
 /*
@@ -1153,7 +1153,7 @@ static int intel_cqm_event_init(struct perf_event *event)
 	mutex_unlock(&cache_mutex);
 
 	if (rotate)
-		schedule_delayed_work(&intel_cqm_rmid_work, 0);
+		queue_delayed_work(system_power_efficient_wq, &intel_cqm_rmid_work, 0);
 
 	return 0;
 }

@@ -756,7 +756,7 @@ rpcrdma_is_bcall(struct rpcrdma_msg *headerp)
 void
 rpcrdma_conn_func(struct rpcrdma_ep *ep)
 {
-	schedule_delayed_work(&ep->rep_connect_worker, 0);
+	queue_delayed_work(system_power_efficient_wq, &ep->rep_connect_worker, 0);
 }
 
 /* Process received RPC/RDMA messages.

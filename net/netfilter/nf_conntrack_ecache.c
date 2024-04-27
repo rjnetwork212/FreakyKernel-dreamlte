@@ -110,7 +110,7 @@ static void ecache_work(struct work_struct *work)
 
 	ctnet->ecache_dwork_pending = delay > 0;
 	if (delay >= 0)
-		schedule_delayed_work(&ctnet->ecache_dwork, delay);
+		queue_delayed_work(system_power_efficient_wq, &ctnet->ecache_dwork, delay);
 }
 
 /* deliver cached events and clear cache entry - must be called with locally

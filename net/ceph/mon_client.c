@@ -185,7 +185,7 @@ static void __schedule_delayed(struct ceph_mon_client *monc)
 			delay = min(delay, opt->monc_ping_timeout / 3);
 	}
 	dout("__schedule_delayed after %lu\n", delay);
-	schedule_delayed_work(&monc->delayed_work,
+	queue_delayed_work(system_power_efficient_wq, &monc->delayed_work,
 			      round_jiffies_relative(delay));
 }
 

@@ -255,7 +255,7 @@ void __init smp_cpus_done(unsigned int max_cpus)
 	 * Use the last cpu just in case the whole chip has been
 	 * isolated from the scheduler, to keep init away from likely
 	 * more useful user code.  This also ensures that work scheduled
-	 * via schedule_delayed_work() in the init routines will land
+	 * via queue_delayed_work(system_power_efficient_wq, ) in the init routines will land
 	 * on this cpu.
 	 */
 	for (cpu = cpumask_first(&init_affinity);
