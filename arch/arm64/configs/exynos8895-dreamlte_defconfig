@@ -2,9 +2,6 @@
 # Automatically generated file; DO NOT EDIT.
 # Linux/arm64 4.4.302 Kernel Configuration
 #
-
-################################################
-CONFIG_WAKE_GESTURES=y
 CONFIG_ARM64=y
 CONFIG_64BIT=y
 CONFIG_ARCH_PHYS_ADDR_T_64BIT=y

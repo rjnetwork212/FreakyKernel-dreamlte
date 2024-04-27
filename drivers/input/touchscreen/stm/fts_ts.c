@@ -53,15 +53,6 @@
 #include <linux/regulator/consumer.h>
 #include <linux/of_gpio.h>
 #include <linux/input/mt.h>
-#ifdef CONFIG_WAKE_GESTURES
-#include <linux/kernel.h>
-#include <linux/wake_gestures.h>
-static bool is_suspended;
-bool scr_suspended_plus(void)
-{
-	return is_suspended;
-}
-#endif
 #ifdef CONFIG_SEC_SYSFS
 #include <linux/sec_sysfs.h>
 #endif
@@ -1772,11 +1763,6 @@ static unsigned char fts_event_handler_type_b(struct fts_ts_info *info,
 			input_mt_slot(info->input_dev, TouchID);
 			input_mt_report_slot_state(info->input_dev,
 						   MT_TOOL_FINGER, 1 + (palm << 1));
-
-#ifdef CONFIG_WAKE_GESTURES
-			if (is_suspended)
-				x += 5000;
-#endif
 
 			input_report_key(info->input_dev, BTN_TOOL_FINGER, 1);
 			input_report_abs(info->input_dev, ABS_MT_POSITION_X, x);
@@ -3687,19 +3673,6 @@ static int fts_stop_device(struct fts_ts_info *info, bool lpmode)
 {
 	input_info(true, &info->client->dev, "%s\n", __func__);
 
-#ifdef CONFIG_WAKE_GESTURES
-	if (s2w_switch || dt2w_switch) {
-		mutex_lock(&info->device_mutex);
-		fts_command(info, FLUSHBUFFER);
-		fts_release_all_finger(info);
-		is_suspended = true;
-		enable_irq_wake(info->irq);
-		mutex_unlock(&info->device_mutex);
-
-		return 0;
-	}
-#endif
-
 #if defined(CONFIG_SECURE_TOUCH)
 	fts_secure_touch_stop(info, 1);
 #endif
@@ -3773,21 +3746,6 @@ static int fts_start_device(struct fts_ts_info *info)
 {
 	input_info(true, &info->client->dev, "%s%s\n",
 			__func__, info->fts_power_state ? ": exit low power mode TP" : "");
-
-#ifdef CONFIG_WAKE_GESTURES
-	if (s2w_switch || dt2w_switch) {
-		mutex_lock(&info->device_mutex);
- 		fts_release_all_finger(info);
-		fts_set_warmboot_crc_enable(info);
-		info->reinit_done = false;
-		fts_reinit(info);
-		info->reinit_done = true;
-		disable_irq_wake(info->irq);
-		mutex_unlock(&info->device_mutex);
-
-		goto exit;
-	}
-#endif
 
 #if defined(CONFIG_SECURE_TOUCH)
 	fts_secure_touch_stop(info, 1);
@@ -3865,20 +3823,6 @@ static int fts_start_device(struct fts_ts_info *info)
 #endif
 
 	fts_wirelesscharger_mode(info);
-
-#ifdef CONFIG_WAKE_GESTURES
-exit:
-	if (dt2w_switch_changed) {
-		dt2w_switch = dt2w_switch_temp;
-		dt2w_switch_changed = false;
-	}
-	if (s2w_switch_changed) {
-		s2w_switch = s2w_switch_temp;
-		s2w_switch_changed = false;
-	}
-
- 	is_suspended = false;
-#endif
 
 	return 0;
 }
