@@ -25,9 +25,13 @@ jobs:
           git clone --depth=1 https://github.com/tiann/KernelSU.git
           mv KernelSU ./KernelSU
 
-      - name: Integrate KernelSU to Makefile (if not exists)
+      - name: Integrate KernelSU
         run: |
-          grep -q 'obj-y += KernelSU/' Makefile || echo -e '\n# KernelSU\nobj-y += KernelSU/' >> Makefile
+          curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -
+
+      - name: Integrate SUSFS
+        run: |
+          curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs
 
       - name: Configure kernel (defconfig)
         run: |
