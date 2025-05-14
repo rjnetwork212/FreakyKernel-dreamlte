@@ -57,10 +57,17 @@ jobs:
         if: failure()
         run: tail -n 100 build.log || true
 
+      - name: List kernel output
+        run: ls -lh arch/arm64/boot/ || true
+      - name: List DTB output
+        run: ls -lh arch/arm64/boot/dts/ || true
+
       - name: Upload kernel image
         uses: actions/upload-artifact@v4
         with:
           name: kernel-image
           path: |
             arch/arm64/boot/Image*
+            arch/arm64/boot/Image.gz*
+            arch/arm64/boot/zImage*
             arch/arm64/boot/dts/*.dtb 
