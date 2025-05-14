@@ -51,7 +51,11 @@ jobs:
 
       - name: Build kernel
         run: |
-          make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
+          make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- V=1 2>&1 | tee build.log
+
+      - name: Show build log (last 100 lines)
+        if: failure()
+        run: tail -n 100 build.log || true
 
       - name: Upload kernel image
         uses: actions/upload-artifact@v4
