@@ -30,10 +30,10 @@ jobs:
 
       - name: Set default LITTLE/BIG CPU MASK
         run: |
-          sed -i '/LITTLE_CPU_MASK/d' .config || true
-          sed -i '/BIG_CPU_MASK/d' .config || true
-          echo 'CONFIG_LITTLE_CPU_MASK=""' >> .config
-          echo 'CONFIG_BIG_CPU_MASK=""' >> .config
+          sed -i '/^LITTLE_CPU_MASK/d' .config || true
+          sed -i '/^BIG_CPU_MASK/d' .config || true
+          echo 'LITTLE_CPU_MASK=0' >> .config
+          echo 'BIG_CPU_MASK=0' >> .config
 
       - name: Configure kernel (defconfig)
         run: |
