@@ -28,6 +28,13 @@ jobs:
         run: |
           curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next-susfs/kernel/setup.sh" | bash -s next-susfs
 
+      - name: Set default LITTLE/BIG CPU MASK
+        run: |
+          sed -i '/LITTLE_CPU_MASK/d' .config || true
+          sed -i '/BIG_CPU_MASK/d' .config || true
+          echo 'CONFIG_LITTLE_CPU_MASK=""' >> .config
+          echo 'CONFIG_BIG_CPU_MASK=""' >> .config
+
       - name: Configure kernel (defconfig)
         run: |
           make ARCH=arm64 defconfig
