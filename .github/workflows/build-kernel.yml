@@ -41,14 +41,13 @@ jobs:
 
       - name: Patch LITTLE/BIG CPU MASK
         run: |
-          sed -i '/^LITTLE_CPU_MASK/d' .config || true
-          sed -i '/^BIG_CPU_MASK/d' .config || true
-          echo 'LITTLE_CPU_MASK=0' >> .config
-          echo 'BIG_CPU_MASK=0' >> .config
+          sed -i '/^CONFIG_LITTLE_CPU_MASK/d' .config || true
+          sed -i '/^CONFIG_BIG_CPU_MASK/d' .config || true
+          echo 'CONFIG_LITTLE_CPU_MASK=0' >> .config
+          echo 'CONFIG_BIG_CPU_MASK=8' >> .config
 
-      - name: Fix kernel config (auto olddefconfig)
-        run: |
-          make ARCH=arm64 olddefconfig
+      - name: Debug .config after patch
+        run: cat .config
 
       - name: Build kernel
         run: |
