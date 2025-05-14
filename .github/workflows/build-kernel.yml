@@ -1,0 +1,46 @@
+name: Build Kernel with KernelSU
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout kernel source
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bc bison flex libssl-dev make libc6-dev libncurses5-dev gcc clang ccache git
+
+      - name: Clone KernelSU
+        run: |
+          git clone --depth=1 https://github.com/tiann/KernelSU.git
+          mv KernelSU ./KernelSU
+
+      - name: Integrate KernelSU to Makefile (if not exists)
+        run: |
+          grep -q 'obj-y += KernelSU/' Makefile || echo -e '\n# KernelSU\nobj-y += KernelSU/' >> Makefile
+
+      - name: Configure kernel (defconfig)
+        run: |
+          make ARCH=arm64 defconfig
+
+      - name: Build kernel
+        run: |
+          make -j$(nproc) ARCH=arm64
+
+      - name: Upload kernel image
+        uses: actions/upload-artifact@v3
+        with:
+          name: kernel-image
+          path: |
+            arch/arm64/boot/Image*
+            arch/arm64/boot/dts/*.dtb 
