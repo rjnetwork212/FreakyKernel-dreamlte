@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc bison flex libssl-dev make libc6-dev libncurses5-dev gcc clang ccache git expect
+          sudo apt-get install -y bc bison flex libssl-dev make libc6-dev libncurses5-dev gcc clang ccache git expect gcc-aarch64-linux-gnu
 
       - name: Integrate KernelSU-Next
         run: |
@@ -51,7 +51,7 @@ jobs:
 
       - name: Build kernel
         run: |
-          make -j$(nproc) ARCH=arm64
+          make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu-
 
       - name: Upload kernel image
         uses: actions/upload-artifact@v4
