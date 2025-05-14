@@ -30,6 +30,8 @@
 
 #include "smpboot.h"
 
+static cpumask_var_t hmp_fast_cpu_mask;
+
 #ifdef CONFIG_SMP
 /* Serializes the updates to cpu_online_mask, cpu_present_mask */
 static DEFINE_MUTEX(cpu_add_remove_lock);
@@ -1081,5 +1083,3 @@ void idle_notifier_call_chain(unsigned long val)
 	atomic_notifier_call_chain(&idle_notifier, val, NULL);
 }
 EXPORT_SYMBOL_GPL(idle_notifier_call_chain);
-
-static cpumask_var_t hmp_fast_cpu_mask;
