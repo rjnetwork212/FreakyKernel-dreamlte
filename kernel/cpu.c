@@ -1081,3 +1081,5 @@ void idle_notifier_call_chain(unsigned long val)
 	atomic_notifier_call_chain(&idle_notifier, val, NULL);
 }
 EXPORT_SYMBOL_GPL(idle_notifier_call_chain);
+
+static cpumask_var_t hmp_fast_cpu_mask;
