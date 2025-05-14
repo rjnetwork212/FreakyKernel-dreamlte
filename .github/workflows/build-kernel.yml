@@ -39,17 +39,16 @@ jobs:
         run: |
           make ARCH=arm64 defconfig
 
-      - name: Fix kernel config (auto oldconfig)
+      - name: Patch LITTLE/BIG CPU MASK
         run: |
-          sudo apt-get install -y expect
-          expect <<EOF
-          spawn make ARCH=arm64 oldconfig
-          expect {
-            -re "Bitmask of available LITTLE CPUs.*" { send "0\r"; exp_continue }
-            -re "Bitmask of available BIG CPUs.*" { send "0\r"; exp_continue }
-            eof
-          }
-          EOF
+          sed -i '/^LITTLE_CPU_MASK/d' .config || true
+          sed -i '/^BIG_CPU_MASK/d' .config || true
+          echo 'LITTLE_CPU_MASK=0' >> .config
+          echo 'BIG_CPU_MASK=0' >> .config
+
+      - name: Fix kernel config (auto olddefconfig)
+        run: |
+          make ARCH=arm64 olddefconfig
 
       - name: Build kernel
         run: |
