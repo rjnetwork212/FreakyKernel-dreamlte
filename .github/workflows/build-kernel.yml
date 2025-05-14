@@ -32,6 +32,10 @@ jobs:
         run: |
           make ARCH=arm64 defconfig
 
+      - name: Fix kernel config (auto oldconfig)
+        run: |
+          yes "" | make ARCH=arm64 oldconfig
+
       - name: Build kernel
         run: |
           make -j$(nproc) ARCH=arm64
