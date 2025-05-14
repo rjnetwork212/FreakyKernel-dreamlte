@@ -74,4 +74,11 @@ jobs:
             arch/arm64/boot/Image*
             arch/arm64/boot/Image.gz*
             arch/arm64/boot/zImage*
-            arch/arm64/boot/dts/*.dtb 
+            arch/arm64/boot/dts/*.dtb
+
+      - name: Build kernel image
+        run: |
+          make -j$(nproc) ARCH=arm64 CROSS_COMPILE=aarch64-linux-gnu- Image
+
+      - name: List all files in arch/arm64/boot/
+        run: ls -lh arch/arm64/boot/ || true 
