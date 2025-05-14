@@ -20,12 +20,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y bc bison flex libssl-dev make libc6-dev libncurses5-dev gcc clang ccache git
 
-      - name: Clone KernelSU
-        run: |
-          git clone --depth=1 https://github.com/tiann/KernelSU.git
-          mv KernelSU ./KernelSU
-
-      - name: Integrate KernelSU
+      - name: Integrate KernelSU-Next
         run: |
           curl -LSs "https://raw.githubusercontent.com/rifsxd/KernelSU-Next/next/kernel/setup.sh" | bash -
 
