@@ -18,7 +18,7 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y bc bison flex libssl-dev make libc6-dev libncurses5-dev gcc clang ccache git
+          sudo apt-get install -y bc bison flex libssl-dev make libc6-dev libncurses5-dev gcc clang ccache git expect
 
       - name: Integrate KernelSU-Next
         run: |
@@ -41,7 +41,15 @@ jobs:
 
       - name: Fix kernel config (auto oldconfig)
         run: |
-          yes "" | make ARCH=arm64 oldconfig
+          sudo apt-get install -y expect
+          expect <<EOF
+          spawn make ARCH=arm64 oldconfig
+          expect {
+            -re "Bitmask of available LITTLE CPUs.*" { send "0\r"; exp_continue }
+            -re "Bitmask of available BIG CPUs.*" { send "0\r"; exp_continue }
+            eof
+          }
+          EOF
 
       - name: Build kernel
         run: |
